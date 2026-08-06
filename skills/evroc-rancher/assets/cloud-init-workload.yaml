@@ -1,0 +1,31 @@
+## template: jinja
+#cloud-config
+# SPDX-License-Identifier: Apache-2.0
+# Downstream workload node - joins the K3s cluster as a worker agent
+hostname: ${hostname}
+
+ssh_pwauth: false
+users:
+  - name: ubuntu
+    lock_passwd: true
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+{% if public_ssh_keys %}
+    ssh_authorized_keys:
+{% for pubkey in public_ssh_keys %}
+      - {{ pubkey }}
+{% endfor %}
+{% endif %}
+
+package_update: true
+
+packages:
+  - curl
+
+runcmd:
+  # Wait for the Rancher server K3s to be ready before joining
+  - sleep 30
+  # Join the K3s cluster as a worker agent
+  - curl -sfL https://get.k3s.io ${k3s_version != "" ? "INSTALL_K3S_VERSION=\"${k3s_version}\"" : ""} | K3S_TOKEN="${k3s_token}" K3S_URL="${k3s_server_url}" sh -s - agent
+
+final_message: "K3s worker ready after $UPTIME seconds"

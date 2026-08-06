@@ -1,0 +1,41 @@
+# Example Terraform variables for Rancher on evroc
+# Copy this file to terraform.tfvars and update with your values
+
+# evroc region (default: se-sto)
+# evroc_region = "se-sto"
+
+# evroc zone (default: a)
+# evroc_zone = "a"
+
+# Prefix for all created resources (default: rancher)
+# prefix = "rancher"
+
+# SSH public key for accessing the VMs
+# Generate with: ssh-keygen -t ed25519 -C "your-email@example.com"
+# Then paste the contents of ~/.ssh/id_ed25519.pub here
+ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... your-email@example.com"
+
+# Admin password for the Rancher server
+# Must be at least 14 characters
+# See: https://ranchermanager.docs.rancher.com/v2.15/getting-started/installation-and-upgrade/resources/bootstrap-password
+rancher_server_admin_password = "ChangeMe-This-Is-Not-Secure!"
+
+# Shared secret for K3s cluster authentication
+# Generate with: openssl rand -base64 32
+# This token must be at least 16 characters long
+# k3s_token = "your-super-secret-k3s-token-change-this"
+
+# K3s version to install (optional)
+# Leave empty or comment out to use latest stable version
+# Find versions at: https://github.com/k3s-io/k3s/releases
+# k3s_version = "v1.28.5+k3s1"
+
+# Compute instance sizes (optional)
+# Minimum for rancher: a1a.s, recommended: a1a.m or a1a.l
+# Minimum for workload: a1a.s
+# rancher_instance_type = "a1a.m"
+# workload_instance_type = "a1a.s"
+
+# Boot disk sizes in GB (optional)
+# rancher_disk_size = 50
+# workload_disk_size = 50
