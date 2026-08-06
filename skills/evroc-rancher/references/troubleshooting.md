@@ -63,11 +63,12 @@ The Rancher stable Helm chart requires Kubernetes < 1.36.0. K3s defaults to the 
 
 **Fix:** Pin `k3s_version` to `v1.35.7+k3s1` in `terraform.tfvars` and redeploy. This is the default in the current templates.
 
-**Fix on a running node:** Uninstall K3s and reinstall with the pinned version:
+**Fix on a running node:** Uninstall K3s and reinstall with the pinned version (the env var must be exported before the curl command):
 
 ```bash
 sudo /usr/local/bin/k3s-uninstall.sh
-curl -sfL https://get.k3s.io INSTALL_K3S_VERSION="v1.35.7+k3s1" | sh -s - server --cluster-init --tls-san "<rancher_hostname>" --write-kubeconfig-mode "0644" --token "<k3s_token>"
+export INSTALL_K3S_VERSION="v1.35.7+k3s1"
+curl -sfL https://get.k3s.io | sh -s - server --cluster-init --tls-san "<rancher_hostname>" --write-kubeconfig-mode "0644" --token "<k3s_token>"
 ```
 
 Then re-run the Helm installs (cert-manager + Rancher) as described in the "Cloud-init stuck on cert-manager" section above.
