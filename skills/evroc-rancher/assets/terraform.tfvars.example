@@ -25,11 +25,6 @@ rancher_server_admin_password = "ChangeMe-This-Is-Not-Secure!"
 # This token must be at least 16 characters long
 # k3s_token = "your-super-secret-k3s-token-change-this"
 
-# K3s version to install
-# Pinned to v1.35.7+k3s1 for Rancher chart compatibility (chart requires kubeVersion < 1.36.0)
-# Find versions at: https://github.com/k3s-io/k3s/releases
-# k3s_version = "v1.35.7+k3s1"
-
 # Compute instance sizes (optional)
 # Minimum for rancher: a1a.s, recommended: a1a.m or a1a.l
 # Minimum for workload: a1a.s
