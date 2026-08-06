@@ -39,22 +39,22 @@ runcmd:
   - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
   # Install cert-manager CRDs
-  - sudo k3s kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.0/cert-manager.crds.yaml
+  - sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.0/cert-manager.crds.yaml
 
   # Install cert-manager via Helm
-  - sudo helm repo add jetstack https://charts.jetstack.io
-  - sudo helm repo update
-  - sudo helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace
+  - sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm repo add jetstack https://charts.jetstack.io
+  - sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm repo update
+  - sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace
 
   # Wait for cert-manager to be ready
-  - until sudo k3s kubectl -n cert-manager rollout status deploy/cert-manager; do echo "Waiting for cert-manager..."; sleep 5; done
+  - until sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl -n cert-manager rollout status deploy/cert-manager; do echo "Waiting for cert-manager..."; sleep 5; done
 
   # Install Rancher (community Helm chart — free, no SCC needed)
-  - sudo helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
-  - sudo helm repo update
-  - sudo helm install rancher rancher-stable/rancher --namespace cattle-system --create-namespace --set hostname="${rancher_hostname}" --set replicas=1 --set bootstrapPassword="${rancher_password}"
+  - sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+  - sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm repo update
+  - sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install rancher rancher-stable/rancher --namespace cattle-system --create-namespace --set hostname="${rancher_hostname}" --set replicas=1 --set bootstrapPassword="${rancher_password}"
 
   # Wait for Rancher to be ready
-  - until sudo k3s kubectl -n cattle-system rollout status deploy/rancher; do echo "Waiting for Rancher..."; sleep 10; done
+  - until sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl -n cattle-system rollout status deploy/rancher; do echo "Waiting for Rancher..."; sleep 10; done
 
 final_message: "Rancher server ready after $UPTIME seconds"
