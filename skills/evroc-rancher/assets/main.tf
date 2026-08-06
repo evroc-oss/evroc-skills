@@ -120,6 +120,7 @@ resource "evroc_virtual_machine" "rancher" {
     rancher_hostname = "${evroc_public_ip.rancher.ip_address}.sslip.io"
     rancher_password = var.rancher_server_admin_password
     k3s_version      = var.k3s_version
+    k3s_token        = var.k3s_token
     public_ssh_keys  = [var.ssh_public_key]
   })
 }

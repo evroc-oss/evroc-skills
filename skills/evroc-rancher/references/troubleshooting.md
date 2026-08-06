@@ -53,6 +53,30 @@ Common causes:
 - cert-manager not ready yet (check with `sudo k3s kubectl -n cert-manager get pods`)
 - Insufficient resources on the VM (use `a1a.m` or larger for the Rancher server)
 
+## Cloud-init stuck on "Waiting for cert-manager"
+
+If `cloud-init status` shows `running` for more than 10 minutes and `cloud-init-output.log` shows repeated `Error from server (NotFound): namespaces "cert-manager" not found`, the Helm install failed silently.
+
+**Root cause:** Helm defaults to `localhost:8080` but K3s runs on `6443`. Every `helm` and `kubectl` command in cloud-init must use `KUBECONFIG=/etc/rancher/k3s/k3s.yaml`.
+
+**Manual fix on the node:**
+
+```bash
+ssh ubuntu@<rancher_node_ip>
+sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm repo add jetstack https://charts.jetstack.io
+sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm repo update
+sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace
+sudo k3s kubectl -n cert-manager rollout status deploy/cert-manager
+```
+
+## K3s auth failures (401) from workload node
+
+If K3s logs show `Failed to authenticate request` from the workload node IP, the K3s server and agent have mismatched tokens. Both must use the same `--token` value.
+
+**Check:** The server's K3s install line in cloud-init must include `--token "${k3s_token}"` and the variable must be passed through `templatefile()` in `main.tf`.
+
+**Fix on the running node:** Reinstall K3s with the correct token, or destroy and redeploy with the fixed templates.
+
 ## Workload node not joining
 
 ```bash

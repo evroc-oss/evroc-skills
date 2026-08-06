@@ -29,8 +29,8 @@ write_files:
         - ${rancher_hostname}
 
 runcmd:
-  # Install K3s (single-node Kubernetes with embedded etcd)
-  - curl -sfL https://get.k3s.io ${k3s_version != "" ? "INSTALL_K3S_VERSION=\"${k3s_version}\"" : ""} | sh -s - server --cluster-init --tls-san "${rancher_hostname}" --write-kubeconfig-mode "0644"
+  # Install K3s (single-node Kubernetes with embedded etcd) with shared token
+  - curl -sfL https://get.k3s.io ${k3s_version != "" ? "INSTALL_K3S_VERSION=\"${k3s_version}\"" : ""} | sh -s - server --cluster-init --tls-san "${rancher_hostname}" --write-kubeconfig-mode "0644" --token "${k3s_token}"
 
   # Wait for K3s to be ready
   - until sudo k3s kubectl get nodes; do echo "Waiting for K3s..."; sleep 5; done
