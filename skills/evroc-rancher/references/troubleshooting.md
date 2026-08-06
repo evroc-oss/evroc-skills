@@ -53,6 +53,25 @@ Common causes:
 - cert-manager not ready yet (check with `sudo k3s kubectl -n cert-manager get pods`)
 - Insufficient resources on the VM (use `a1a.m` or larger for the Rancher server)
 
+## Rancher Helm chart incompatible with K3s version
+
+```
+Error: INSTALLATION FAILED: chart requires kubeVersion: < 1.36.0-0 which is incompatible with Kubernetes v1.36.3+k3s1
+```
+
+The Rancher stable Helm chart requires Kubernetes < 1.36.0. K3s defaults to the latest version (v1.36.x), which is too new.
+
+**Fix:** Pin `k3s_version` to `v1.35.7+k3s1` in `terraform.tfvars` and redeploy. This is the default in the current templates.
+
+**Fix on a running node:** Uninstall K3s and reinstall with the pinned version:
+
+```bash
+sudo /usr/local/bin/k3s-uninstall.sh
+curl -sfL https://get.k3s.io INSTALL_K3S_VERSION="v1.35.7+k3s1" | sh -s - server --cluster-init --tls-san "<rancher_hostname>" --write-kubeconfig-mode "0644" --token "<k3s_token>"
+```
+
+Then re-run the Helm installs (cert-manager + Rancher) as described in the "Cloud-init stuck on cert-manager" section above.
+
 ## Cloud-init stuck on "Waiting for cert-manager"
 
 If `cloud-init status` shows `running` for more than 10 minutes and `cloud-init-output.log` shows repeated `Error from server (NotFound): namespaces "cert-manager" not found`, the Helm install failed silently.

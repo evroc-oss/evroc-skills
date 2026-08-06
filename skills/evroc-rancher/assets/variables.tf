@@ -59,7 +59,7 @@ variable "k3s_token" {
 }
 
 variable "k3s_version" {
-  description = "K3s version to install. Leave empty to use latest stable. Find versions at https://github.com/k3s-io/k3s/releases"
+  description = "K3s version to install. Pinned to v1.35.7+k3s1 for Rancher chart compatibility (chart requires kubeVersion < 1.36.0). Find versions at https://github.com/k3s-io/k3s/releases"
   type        = string
-  default     = ""
+  default     = "v1.35.7+k3s1"
 }

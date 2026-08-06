@@ -120,4 +120,4 @@ The `assets/` directory contains the Terraform module files. `deploy.sh` copies 
 - **Bootstrap time**: Rancher takes 5–10 minutes to become ready after VMs are provisioned. A 404 at the Rancher URL during this window is normal — the ingress controller is up before Rancher is ready.
 - **SSH key mismatch**: The SSH key in `terraform.tfvars` must match the key used to SSH into the VMs. If the user generated a new key, they must use that key (not a different one) for SSH access.
 - **Password requirements**: The Rancher admin password must be at least 14 characters. Shorter passwords cause the Helm install to fail silently.
-- **k3s_version empty string**: The default `k3s_version` is `""` which means "latest stable." The cloud-init templates handle this correctly — do not set it to a quoted empty string in tfvars.
+- **K3s version pinning**: K3s defaults to `v1.35.7+k3s1` because the Rancher Helm chart requires `kubeVersion < 1.36.0`. K3s v1.36.x will cause `INSTALLATION FAILED: chart requires kubeVersion: < 1.36.0-0`. Do not set `k3s_version` to empty or a v1.36.x version.
