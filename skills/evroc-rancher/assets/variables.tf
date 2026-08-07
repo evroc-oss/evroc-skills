@@ -39,14 +39,20 @@ variable "rancher_disk_size" {
   default     = 50
 }
 
+variable "workload_node_count" {
+  description = "Number of downstream workload nodes to deploy"
+  type        = number
+  default     = 1
+}
+
 variable "workload_instance_type" {
-  description = "Compute instance size for the downstream workload node"
+  description = "Compute instance size for the downstream workload nodes"
   type        = string
   default     = "a1a.s"
 }
 
 variable "workload_disk_size" {
-  description = "Boot disk size in GB for the downstream workload node"
+  description = "Boot disk size in GB for the downstream workload nodes"
   type        = number
   default     = 50
 }

@@ -126,27 +126,33 @@ resource "evroc_virtual_machine" "rancher" {
 }
 
 # ====================================
-# Downstream Workload Node
+# Downstream Workload Nodes
 # ====================================
 
 resource "evroc_disk" "workload_boot" {
-  name  = "${var.prefix}-workload-boot"
+  count = var.workload_node_count
+
+  name  = "${var.prefix}-workload-${count.index + 1}-boot"
   size  = var.workload_disk_size
   image = data.evroc_disk_images.available.ubuntu_minimal_24_04_1
   zone  = var.evroc_zone
 }
 
 resource "evroc_public_ip" "workload" {
-  name = "${var.prefix}-workload-ip"
+  count = var.workload_node_count
+
+  name = "${var.prefix}-workload-${count.index + 1}-ip"
 }
 
 resource "evroc_virtual_machine" "workload" {
-  name      = "${var.prefix}-workload"
+  count = var.workload_node_count
+
+  name      = "${var.prefix}-workload-${count.index + 1}"
   flavor    = var.workload_instance_type
-  boot_disk = evroc_disk.workload_boot.fqid
+  boot_disk = evroc_disk.workload_boot[count.index].fqid
   zone      = var.evroc_zone
 
-  public_ip       = evroc_public_ip.workload.fqid
+  public_ip       = evroc_public_ip.workload[count.index].fqid
   security_groups = [evroc_security_group.rancher.fqid]
 
   ssh_keys = [
@@ -154,7 +160,7 @@ resource "evroc_virtual_machine" "workload" {
   ]
 
   cloud_config_user_data = templatefile("${path.module}/cloud-init-workload.yaml", {
-    hostname        = "${var.prefix}-workload"
+    hostname        = "${var.prefix}-workload-${count.index + 1}"
     k3s_token       = var.k3s_token
     k3s_version     = var.k3s_version
     k3s_server_url  = "https://${evroc_public_ip.rancher.ip_address}:6443"
@@ -180,7 +186,7 @@ output "rancher_server_url" {
   description = "URL to access the Rancher UI"
 }
 
-output "workload_node_ip" {
-  value       = evroc_public_ip.workload.ip_address
-  description = "Public IP address of the downstream workload node"
+output "workload_node_ips" {
+  value       = [for ip in evroc_public_ip.workload : ip.ip_address]
+  description = "Public IP addresses of the downstream workload nodes"
 }

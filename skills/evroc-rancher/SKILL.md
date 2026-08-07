@@ -1,8 +1,8 @@
 ---
 name: evroc-rancher
-description: Deploy, inspect, and destroy Rancher Manager on evroc cloud using Terraform. Use when the user wants to deploy Rancher on evroc, set up a K3s cluster on evroc VMs, or manage an existing evroc Rancher deployment. Covers the full lifecycle: prerequisites check, interactive variable collection, terraform apply, status polling, and teardown.
+description: "Deploy, inspect, and destroy Rancher Manager on evroc cloud using Terraform. Use when the user wants to deploy Rancher on evroc, set up a K3s cluster on evroc VMs, or manage an existing evroc Rancher deployment. Covers the full lifecycle: prerequisites check, interactive variable collection, terraform apply, status polling, and teardown."
 license: Apache-2.0
-compatibility: Requires terraform, evroc CLI, curl, git, and SSH. macOS or Linux. evroc account with public IP quota (2+ available).
+compatibility: "Requires terraform, evroc CLI, curl, git, and SSH. macOS or Linux. evroc account with public IP quota (2+ available)."
 metadata:
   author: evroc
   version: "1.0"
@@ -12,7 +12,7 @@ allowed-tools: terminal
 
 # evroc-rancher
 
-Deploy Rancher Manager on evroc cloud infrastructure. The skill provisions two VMs via the evroc Terraform provider: a Rancher server node (K3s + cert-manager + Rancher) and a downstream workload node (K3s agent). Cloud-init automates the full software stack.
+Deploy Rancher Manager on evroc cloud infrastructure. The skill provisions a Rancher server node (K3s + cert-manager + Rancher) and one or more downstream workload nodes (K3s agents) via the evroc Terraform provider. Cloud-init automates the full software stack. The number of workload nodes is configurable — prompt the user for the count if not specified.
 
 For troubleshooting and error diagnosis, read [`references/troubleshooting.md`](references/troubleshooting.md).
 
@@ -42,6 +42,7 @@ Three operations, each with a distinct script. Collect the required inputs from 
 1. Collect these **required** values from the user via `clarify`:
    - SSH public key — if `scripts/prerequisites.sh` found one, confirm it; otherwise ask the user to paste it or generate one with `ssh-keygen -t ed25519`.
    - Rancher admin password — must be at least 14 characters. Ask the user to set one.
+   - Number of workload nodes — if the user did not specify a count, ask via `clarify`. Default: 1. Each workload node needs a public IP (see IP quota pitfall).
 
 2. Collect **optional** values, offering defaults:
    - evroc region (default: `se-sto`)
@@ -52,7 +53,7 @@ Three operations, each with a distinct script. Collect the required inputs from 
 
 4. Run the deploy script:
    ```bash
-   bash scripts/deploy.sh <workdir> "<ssh_public_key>" "<rancher_password>" [region] [zone] [prefix]
+   bash scripts/deploy.sh <workdir> "<ssh_public_key>" "<rancher_password>" [region] [zone] [prefix] [workload_node_count]
    ```
 
 5. Wait for `terraform apply` to complete (~5–8 minutes for provisioning, ~5–10 minutes for cloud-init bootstrap).
@@ -98,7 +99,7 @@ The user adds their own remote and pushes — the skill does not push to any rem
 | Script | Purpose | Usage |
 |---|---|---|
 | `scripts/prerequisites.sh` | Check and install tools | `bash scripts/prerequisites.sh` |
-| `scripts/deploy.sh` | Provision VMs + Rancher | `bash scripts/deploy.sh <workdir> "<ssh_key>" "<password>" [region] [zone] [prefix]` |
+| `scripts/deploy.sh` | Provision VMs + Rancher | `bash scripts/deploy.sh <workdir> "<ssh_key>" "<password>" [region] [zone] [prefix] [workload_node_count]` |
 | `scripts/destroy.sh` | Tear down everything | `bash scripts/destroy.sh <workdir>` |
 | `scripts/status.sh` | Check deployment health | `bash scripts/status.sh <rancher_ip>` |
 
@@ -116,7 +117,7 @@ The `assets/` directory contains the Terraform module files. `deploy.sh` copies 
 
 ## Pitfalls
 
-- **Public IP quota**: evroc accounts have a 3-IP quota. This deployment needs 2. If the user hits a 403 quota error, they must free IPs with `evroc networking publicip list` + `evroc networking publicip delete <id>`.
+- **Public IP quota**: evroc accounts have a 3-IP quota. The deployment needs 1 IP for the Rancher server + 1 IP per workload node. If the user hits a 403 quota error, they must free IPs with `evroc networking publicip list` + `evroc networking publicip delete <id>`.
 - **Bootstrap time**: Rancher takes 5–10 minutes to become ready after VMs are provisioned. A 404 at the Rancher URL during this window is normal — the ingress controller is up before Rancher is ready.
 - **SSH key mismatch**: The SSH key in `terraform.tfvars` must match the key used to SSH into the VMs. If the user generated a new key, they must use that key (not a different one) for SSH access.
 - **Password requirements**: The Rancher admin password must be at least 14 characters. Shorter passwords cause the Helm install to fail silently.

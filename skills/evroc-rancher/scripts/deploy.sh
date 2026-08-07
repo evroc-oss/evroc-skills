@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # deploy.sh — deploy Rancher on evroc using the bundled Terraform module
-# Usage: deploy.sh <workdir> <ssh_public_key> <rancher_admin_password> [evroc_region] [evroc_zone] [prefix]
+# Usage: deploy.sh <workdir> <ssh_public_key> <rancher_admin_password> [evroc_region] [evroc_zone] [prefix] [workload_node_count]
 set -euo pipefail
 
 WORKDIR="$1"
@@ -9,6 +9,7 @@ RANCHER_PASSWORD="$3"
 EVROC_REGION="${4:-se-sto}"
 EVROC_ZONE="${5:-a}"
 PREFIX="${6:-rancher}"
+WORKLOAD_NODE_COUNT="${7:-1}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ASSETS_DIR="$SCRIPT_DIR/../assets"
@@ -25,6 +26,7 @@ rancher_server_admin_password = "$RANCHER_PASSWORD"
 evroc_region = "$EVROC_REGION"
 evroc_zone = "$EVROC_ZONE"
 prefix = "$PREFIX"
+workload_node_count = $WORKLOAD_NODE_COUNT
 EOF
 
 # --- Terraform init + apply ---
@@ -37,4 +39,4 @@ echo ""
 echo "=== Deployment Complete ==="
 terraform output rancher_node_ip
 terraform output rancher_server_url
-terraform output workload_node_ip
+terraform output workload_node_ips
