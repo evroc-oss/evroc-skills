@@ -44,7 +44,7 @@ fi
 if [ -f "$HOME/.evroc/config.yaml" ]; then
   ok "evroc credentials found at ~/.evroc/config.yaml"
 else
-  need "evroc not authenticated. Run: evroc login --domain evroc.com --organization evroc --project <project>"
+  need "evroc not authenticated. Run: evroc login"
   NEEDS_MANUAL=1
 fi
 

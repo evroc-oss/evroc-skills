@@ -131,7 +131,7 @@ evroc config set-project <project-name>
 Or include `--project` when logging in:
 
 ```bash
-evroc login --domain evroc.com --organization evroc --project <project-name>
+evroc login --project <project-name>
 ```
 
 The `scripts/prerequisites.sh` script auto-detects and sets the project if it's missing.
