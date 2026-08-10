@@ -10,6 +10,8 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 | `evroc-compute` | Manage evroc compute resources: VMs, disks, snapshots, and placement groups via the evroc CLI |
 | `evroc-storage` | Manage evroc storage: S3-compatible buckets, file stores, and bucket service accounts |
 | `evroc-loadbalancer` | Manage evroc load balancers: backend pools, services, health checks, L4 routes, and listeners |
+| `evroc-iam` | Manage evroc IAM: projects, role bindings, service accounts, and credentials |
+| `evroc-think` | Manage evroc Think Models: dedicated instances, shared models, API keys, and coding agent integration |
 
 ## Repository Structure
 
@@ -18,6 +20,10 @@ evroc-skills/
 ├── README.md
 └── skills/
     ├── evroc-compute/
+    │   ├── SKILL.md
+    │   └── references/
+    │       └── cli-reference.md
+    ├── evroc-iam/
     │   ├── SKILL.md
     │   └── references/
     │       └── cli-reference.md
@@ -40,7 +46,11 @@ evroc-skills/
     │   │   └── cloud-init-workload.yaml
     │   └── references/
     │       └── troubleshooting.md
-    └── evroc-storage/
+    ├── evroc-storage/
+    │   ├── SKILL.md
+    │   └── references/
+    │       └── cli-reference.md
+    └── evroc-think/
         ├── SKILL.md
         └── references/
             └── cli-reference.md
