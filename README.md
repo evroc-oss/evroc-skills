@@ -8,6 +8,8 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 |---|---|
 | `evroc-rancher` | Deploy, inspect, and destroy Rancher Manager on evroc using Terraform |
 | `evroc-compute` | Manage evroc compute resources: VMs, disks, snapshots, and placement groups via the evroc CLI |
+| `evroc-storage` | Manage evroc storage: S3-compatible buckets, file stores, and bucket service accounts |
+| `evroc-loadbalancer` | Manage evroc load balancers: backend pools, services, health checks, L4 routes, and listeners |
 
 ## Repository Structure
 
@@ -19,21 +21,29 @@ evroc-skills/
     │   ├── SKILL.md
     │   └── references/
     │       └── cli-reference.md
-    └── evroc-rancher/
-        ├── SKILL.md              # Skill metadata + instructions
-        ├── scripts/               # Executable scripts
-        │   ├── prerequisites.sh
-        │   ├── deploy.sh
-        │   ├── destroy.sh
-        │   └── status.sh
-        ├── assets/                # Terraform module files
-        │   ├── main.tf
-        │   ├── variables.tf
-        │   ├── terraform.tfvars.example
-        │   ├── cloud-init-rancher.yaml
-        │   └── cloud-init-workload.yaml
-        └── references/           # On-demand documentation
-            └── troubleshooting.md
+    ├── evroc-loadbalancer/
+    │   ├── SKILL.md
+    │   └── references/
+    │       └── cli-reference.md
+    ├── evroc-rancher/
+    │   ├── SKILL.md
+    │   ├── scripts/
+    │   │   ├── prerequisites.sh
+    │   │   ├── deploy.sh
+    │   │   ├── destroy.sh
+    │   │   └── status.sh
+    │   ├── assets/
+    │   │   ├── main.tf
+    │   │   ├── variables.tf
+    │   │   ├── terraform.tfvars.example
+    │   │   ├── cloud-init-rancher.yaml
+    │   │   └── cloud-init-workload.yaml
+    │   └── references/
+    │       └── troubleshooting.md
+    └── evroc-storage/
+        ├── SKILL.md
+        └── references/
+            └── cli-reference.md
 ```
 
 ## Installation
