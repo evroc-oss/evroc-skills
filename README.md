@@ -7,6 +7,7 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 | Skill | Description |
 |---|---|
 | `evroc-rancher` | Deploy, inspect, and destroy Rancher Manager on evroc using Terraform |
+| `evroc-compute` | Manage evroc compute resources: VMs, disks, snapshots, and placement groups via the evroc CLI |
 
 ## Repository Structure
 
@@ -14,6 +15,10 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 evroc-skills/
 ├── README.md
 └── skills/
+    ├── evroc-compute/
+    │   ├── SKILL.md
+    │   └── references/
+    │       └── cli-reference.md
     └── evroc-rancher/
         ├── SKILL.md              # Skill metadata + instructions
         ├── scripts/               # Executable scripts
