@@ -44,8 +44,30 @@ fi
 if [ -f "$HOME/.evroc/config.yaml" ]; then
   ok "evroc credentials found at ~/.evroc/config.yaml"
 else
-  need "evroc not authenticated. Run: evroc login --domain evroc.com --organization evroc"
+  need "evroc not authenticated. Run: evroc login --domain evroc.com --organization evroc --project <project>"
   NEEDS_MANUAL=1
+fi
+
+# --- evroc project set ---
+if [ -f "$HOME/.evroc/config.yaml" ]; then
+  CURRENT_PROJECT=$(evroc config current-project 2>/dev/null || echo "")
+  if [ -z "$CURRENT_PROJECT" ]; then
+    # Try to auto-detect and set the project
+    AVAILABLE_PROJECTS=$(evroc iam project list 2>/dev/null || echo "")
+    if [ -n "$AVAILABLE_PROJECTS" ]; then
+      FIRST_PROJECT=$(echo "$AVAILABLE_PROJECTS" | head -1)
+      warn "No project set. Auto-detecting: $FIRST_PROJECT"
+      evroc config set-project "$FIRST_PROJECT" 2>/dev/null && ok "Project set to: $FIRST_PROJECT" || {
+        need "Could not auto-set project. Run: evroc config set-project <project-name>"
+        NEEDS_MANUAL=1
+      }
+    else
+      need "No project set and none detected. Run: evroc config set-project <project-name>"
+      NEEDS_MANUAL=1
+    fi
+  else
+    ok "evroc project set: $CURRENT_PROJECT"
+  fi
 fi
 
 # --- SSH key ---

@@ -109,6 +109,33 @@ Common causes:
 - Server not ready when agent tried to join (the cloud-init has a 30s sleep, but the server may need longer)
 - Security group blocking port 9345 (K3s supervisor port)
 
+## Terraform provider: no credentials / project not set
+
+```
+Error: no credentials found: provide 'config_file', explicit credentials, or configure ~/.evroc/config.yaml: environment variables incomplete and CLI config failed to load: invalid CLI config: EVROC_PROJECT is required
+```
+
+The evroc Terraform provider requires a project to be set. `evroc login` does not always set one — the `project` field in `~/.evroc/config.yaml` can be empty.
+
+**Fix:** Set the project explicitly:
+
+```bash
+# Check if a project is set
+evroc config current-project
+
+# If empty, list available projects and set one
+evroc iam project list
+evroc config set-project <project-name>
+```
+
+Or include `--project` when logging in:
+
+```bash
+evroc login --domain evroc.com --organization evroc --project <project-name>
+```
+
+The `scripts/prerequisites.sh` script auto-detects and sets the project if it's missing.
+
 ## Terraform provider not loading
 
 Verify evroc credentials:

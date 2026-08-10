@@ -25,7 +25,7 @@ For troubleshooting and error diagnosis, read [`references/troubleshooting.md`](
 
 ## Prerequisites
 
-Run `scripts/prerequisites.sh` first. It checks for terraform, evroc CLI, evroc authentication, SSH keys, curl, and git — installing terraform via Homebrew if missing. If any prerequisite needs manual action, the script exits non-zero and reports what the user must do.
+Run `scripts/prerequisites.sh` first. It checks for terraform, evroc CLI, evroc authentication, project selection, SSH keys, curl, and git — installing terraform via Homebrew if missing. If the evroc project is not set, the script auto-detects it from `evroc iam project list` and sets it via `evroc config set-project`. If any prerequisite needs manual action, the script exits non-zero and reports what the user must do.
 
 ```bash
 bash scripts/prerequisites.sh
