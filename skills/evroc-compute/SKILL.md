@@ -29,7 +29,7 @@ For full CLI flag reference, read [`references/cli-reference.md`](references/cli
 The evroc CLI must be installed and authenticated:
 
 ```bash
-evroc login --domain evroc.com --organization evroc
+evroc login
 ```
 
 Verify auth:
