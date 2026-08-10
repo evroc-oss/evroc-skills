@@ -147,7 +147,7 @@ cat ~/.evroc/config.yaml
 If missing or incomplete:
 
 ```bash
-evroc login --domain evroc.com --organization evroc
+evroc login
 ```
 
 Then re-initialize:
