@@ -136,6 +136,7 @@ cp -r evroc-skills/skills/ .opencode/skills/
 git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
 mkdir -p ~/.config/opencode/skills
 ln -s ~/evroc-skills/skills/ ~/.config/opencode/skills/
+```
 
 ### Hermes Agent
 
