@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# Mock `terraform` CLI for skillgrade rancher evals.
+# Records calls to the same call log as evroc, and returns success for all operations.
+
+set -u
+
+# --- locate workspace root ---
+root="$PWD"
+d="$PWD"
+while [ "$d" != "/" ]; do
+  if [ -d "$d/.agents" ] || [ -d "$d/.claude" ]; then
+    root="$d"; break
+  fi
+  d="$(dirname "$d")"
+done
+log="/tmp/.sgcalls-$(basename "$root").log"
+
+# --- log this call ---
+{
+  printf '===CALL===\n'
+  printf 'terraform\n'
+  for a in "$@"; do printf '%s\n' "$a"; done
+} >> "$log"
+
+cmd="${1:-}"
+case "$cmd" in
+  init)
+    echo "Initializing the backend..."
+    echo "Initializing provider plugins..."
+    echo "Terraform has been successfully initialized!"
+    ;;
+  plan)
+    echo "Terraform used the selected providers to generate the following execution plan."
+    echo "Plan: 3 to add, 0 to change, 0 to destroy."
+    ;;
+  apply)
+    echo "Terraform used the selected providers to generate the following execution plan."
+    echo "Plan: 3 to add, 0 to change, 0 to destroy."
+    echo ""
+    echo "Apply complete! Resources: 3 added, 0 changed, 0 destroyed."
+    echo ""
+    echo "Outputs:"
+    echo ""
+    echo "rancher_server_url = \"https://rancher.example.evroc.com\""
+    echo "rancher_node_ip = \"10.0.0.10\""
+    echo "workload_node_ips = [\"10.0.0.11\"]"
+    ;;
+  destroy)
+    echo "Destroy complete! Resources: 3 destroyed."
+    ;;
+  output)
+    case "${2:-}" in
+      rancher_server_url) echo "https://rancher.example.evroc.com";;
+      rancher_node_ip) echo "10.0.0.10";;
+      workload_node_ips) echo '["10.0.0.11"]';;
+      "") echo "rancher_server_url = \"https://rancher.example.evroc.com\"";;
+      *) echo "ok";;
+    esac
+    ;;
+  validate) echo "Success! The configuration is valid.";;
+  fmt) echo "ok";;
+  --version|-v) echo "Terraform v1.9.0-mock";;
+  version)
+    if [ "${2:-}" = "-json" ]; then
+      printf '{"terraform_version":"1.9.0","platform":"darwin_arm64"}\n'
+    else
+      echo "Terraform v1.9.0-mock"
+    fi
+    ;;
+  "") echo "Usage: terraform <command>";;
+  *) echo "ok";;
+esac
+exit 0

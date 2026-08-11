@@ -1,0 +1,649 @@
+version: "1"
+
+# Eval suite for evroc-compute (pilot).
+# Run from the repo root so skillgrade auto-detects ALL skills under skills/*
+# (needed for negative-trigger cases, where the agent must pick the correct
+# non-compute skill among all six). The mock `evroc` CLI shim must be on PATH —
+# use run-eval.sh which prepends tests/bin to PATH.
+
+defaults:
+  agent: opencode
+  provider: local
+  trials: 5
+  timeout: 300
+  threshold: 0.8
+  docker:
+    base: node:20-slim
+  environment:
+    cpus: 2
+    memory_mb: 2048
+
+tasks:
+  # ---- trigger: compute should be the only resource service used ----
+  - name: should-trigger-vm-create
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a new evroc VM named web-server in zone a with the a1a.m flavor.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py should-trigger-vm-create
+        weight: 1.0
+
+  - name: should-trigger-disk-create
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      I need to make an evroc boot disk from ubuntu-minimal-24.04.1.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py should-trigger-disk-create
+        weight: 1.0
+
+  - name: should-trigger-snapshot
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Take a snapshot of my evroc disk called db-backup.
+    workspace:
+      - src: fixtures/seed/disk-db-backup
+        dest: .evroc-state/disk/db-backup
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py should-trigger-snapshot
+        weight: 1.0
+
+  - name: should-trigger-placement-group
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Set up a spread placement group on evroc for my cluster.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py should-trigger-placement-group
+        weight: 1.0
+
+  - name: should-trigger-generic-compute
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      List all my evroc instances and show their IPs.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py should-trigger-generic-compute
+        weight: 1.0
+
+  # ---- negative-trigger: compute must NOT be used ----
+  - name: not-trigger-iam
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Grant the computeOperator role to user /iam/users/abc123 on evroc.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py not-trigger-iam
+        weight: 1.0
+
+  - name: not-trigger-storage
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc S3 bucket for my app backups.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py not-trigger-storage
+        weight: 1.0
+
+  - name: not-trigger-loadbalancer
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      I need an evroc load balancer in front of my VMs.
+    workspace:
+      - src: fixtures/seed/vm-web-1
+        dest: .evroc-state/vm/web-1
+      - src: fixtures/seed/vm-web-2
+        dest: .evroc-state/vm/web-2
+      - src: fixtures/seed/attach-web-1
+        dest: .evroc-state/attach/web-1
+      - src: fixtures/seed/attach-web-2
+        dest: .evroc-state/attach/web-2
+      - src: fixtures/seed/disk-web-1-boot
+        dest: .evroc-state/disk/web-1-boot
+      - src: fixtures/seed/disk-web-2-boot
+        dest: .evroc-state/disk/web-2-boot
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py not-trigger-loadbalancer
+        weight: 1.0
+
+  # ---- instruction: disk-before-vm, consistent zone, verify ----
+  - name: instruction-disk-before-vm
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a VM named app-vm in zone a with a 100GB boot disk.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py instruction-disk-before-vm
+        weight: 1.0
+
+  - name: instruction-boot-from-flag
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Attach an extra disk named data-disk to my existing VM app-vm.
+    workspace:
+      - src: fixtures/seed/vm-app-vm
+        dest: .evroc-state/vm/app-vm
+      - src: fixtures/seed/attach-app-vm-boot
+        dest: .evroc-state/attach/app-vm
+      - src: fixtures/seed/disk-app-vm-boot
+        dest: .evroc-state/disk/app-vm-boot
+      - src: fixtures/seed/disk-data-disk
+        dest: .evroc-state/disk/data-disk
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py instruction-boot-from-flag
+        weight: 1.0
+
+  - name: instruction-delete-order
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Delete my evroc VM app-vm and clean up its disk too.
+    workspace:
+      - src: fixtures/seed/vm-app-vm
+        dest: .evroc-state/vm/app-vm
+      - src: fixtures/seed/attach-app-vm-disk
+        dest: .evroc-state/attach/app-vm
+      - src: fixtures/seed/disk-app-vm-disk
+        dest: .evroc-state/disk/app-vm-disk
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py instruction-delete-order
+        weight: 1.0
+
+  - name: instruction-subnet-naming
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a VM in zone b.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py instruction-subnet-naming
+        weight: 1.0
+
+  # ============================================================
+  # evroc-iam (11 cases: 4 trigger, 3 negative, 4 instruction)
+  # ============================================================
+  - name: iam-should-trigger-project-create
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a new evroc project called staging-environment.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-should-trigger-project-create
+        weight: 1.0
+
+  - name: iam-should-trigger-role-grant
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Give /iam/users/abc123 the projectOwner role on my-project.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-should-trigger-role-grant
+        weight: 1.0
+
+  - name: iam-should-trigger-service-account
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a service account on evroc for my CI pipeline called ci-runner.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-should-trigger-service-account
+        weight: 1.0
+
+  - name: iam-should-trigger-access-token
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Get me an evroc access token.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-should-trigger-access-token
+        weight: 1.0
+
+  - name: iam-not-trigger-compute
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc VM named web-server in zone a.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-not-trigger-compute
+        weight: 1.0
+
+  - name: iam-not-trigger-storage
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc S3 bucket for my app backups called app-logs.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-not-trigger-storage
+        weight: 1.0
+
+  - name: iam-not-trigger-think
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Deploy a Mistral model on evroc using a dedicated instance.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-not-trigger-think
+        weight: 1.0
+
+  - name: iam-instruction-principal-fqid
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Grant alice the projectOwner role on my-project. Her user ID in evroc is /iam/users/alice01.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-instruction-principal-fqid
+        weight: 1.0
+
+  - name: iam-instruction-organization-vs-project
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Give my teammate org-level access to create projects. Their user ID is /iam/users/abc123.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-instruction-organization-vs-project
+        weight: 1.0
+
+  - name: iam-instruction-credential-expiry
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a service account called ci-sa, then create a credential for it that expires in 30 days.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-instruction-credential-expiry
+        weight: 1.0
+
+  - name: iam-instruction-idempotent-role
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Make sure user /iam/users/abc123 has computeOperator on the whole project.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py iam-instruction-idempotent-role
+        weight: 1.0
+
+  # ============================================================
+  # evroc-loadbalancer (8 cases: 3 trigger, 2 negative, 3 instruction)
+  # ============================================================
+  - name: lb-should-trigger-lb-create
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Set up a load balancer on evroc for my web VMs.
+    workspace:
+      - src: fixtures/seed/vm-web-1
+        dest: .evroc-state/vm/web-1
+      - src: fixtures/seed/vm-web-2
+        dest: .evroc-state/vm/web-2
+      - src: fixtures/seed/attach-web-1
+        dest: .evroc-state/attach/web-1
+      - src: fixtures/seed/attach-web-2
+        dest: .evroc-state/attach/web-2
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py lb-should-trigger-lb-create
+        weight: 1.0
+
+  - name: lb-should-trigger-backend-pool
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc backend pool called my-pool with vm-1 and vm-2 as backends.
+    workspace:
+      - src: fixtures/seed/vm-web-1
+        dest: .evroc-state/vm/web-1
+      - src: fixtures/seed/vm-web-2
+        dest: .evroc-state/vm/web-2
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py lb-should-trigger-backend-pool
+        weight: 1.0
+
+  - name: lb-should-trigger-health-check
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Add a TCP health check to my evroc backend service called my-service on port 8080.
+    workspace:
+      - src: fixtures/seed/bs-my-service
+        dest: .evroc-state/bs/my-service
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py lb-should-trigger-health-check
+        weight: 1.0
+
+  - name: lb-not-trigger-compute
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc VM named web-server.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py lb-not-trigger-compute
+        weight: 1.0
+
+  - name: lb-not-trigger-storage
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc S3 bucket called app-logs.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py lb-not-trigger-storage
+        weight: 1.0
+
+  - name: lb-instruction-public-ip-first
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      I want a load balancer called my-lb with a listener on port 443. My backend VMs are web-1 and web-2.
+    workspace:
+      - src: fixtures/seed/vm-web-1
+        dest: .evroc-state/vm/web-1
+      - src: fixtures/seed/vm-web-2
+        dest: .evroc-state/vm/web-2
+      - src: fixtures/seed/attach-web-1
+        dest: .evroc-state/attach/web-1
+      - src: fixtures/seed/attach-web-2
+        dest: .evroc-state/attach/web-2
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py lb-instruction-public-ip-first
+        weight: 1.0
+
+  - name: lb-instruction-delete-order
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Delete my evroc load balancer called my-lb and everything attached to it. Do NOT delete the VMs.
+    workspace:
+      - src: fixtures/seed/lb-my-lb
+        dest: .evroc-state/lb/my-lb
+      - src: fixtures/seed/bs-my-service
+        dest: .evroc-state/bs/my-service
+      - src: fixtures/seed/bp-my-pool
+        dest: .evroc-state/bp/my-pool
+      - src: fixtures/seed/l4r-my-route
+        dest: .evroc-state/l4r/my-route
+      - src: fixtures/seed/listener-my-lb_https
+        dest: .evroc-state/listener/my-lb_https
+      - src: fixtures/seed/vm-web-1
+        dest: .evroc-state/vm/web-1
+      - src: fixtures/seed/vm-web-2
+        dest: .evroc-state/vm/web-2
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py lb-instruction-delete-order
+        weight: 1.0
+
+  - name: lb-instruction-health-check-port
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      My app runs on port 3000 but I want the load balancer listener on port 80. Create a load balancer called my-lb with backend VMs web-1 and web-2.
+    workspace:
+      - src: fixtures/seed/vm-web-1
+        dest: .evroc-state/vm/web-1
+      - src: fixtures/seed/vm-web-2
+        dest: .evroc-state/vm/web-2
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py lb-instruction-health-check-port
+        weight: 1.0
+
+  # ============================================================
+  # evroc-storage (9 cases: 4 trigger, 2 negative, 3 instruction)
+  # ============================================================
+  - name: storage-should-trigger-bucket-create
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc bucket called app-logs.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-should-trigger-bucket-create
+        weight: 1.0
+
+  - name: storage-should-trigger-s3-copy
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Copy my local file backup.tar.gz to the evroc bucket backups. You may need to fetch S3 credentials first.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-should-trigger-s3-copy
+        weight: 1.0
+
+  - name: storage-should-trigger-file-store
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an NFS file store on evroc called my-nfs in zone a.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-should-trigger-file-store
+        weight: 1.0
+
+  - name: storage-should-trigger-bucket-sa
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a bucket service account called my-bsa that can access buckets my-logs and my-data.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-should-trigger-bucket-sa
+        weight: 1.0
+
+  - name: storage-not-trigger-compute
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc VM named web-server.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-not-trigger-compute
+        weight: 1.0
+
+  - name: storage-not-trigger-lb
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a load balancer on evroc for my web VMs.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-not-trigger-lb
+        weight: 1.0
+
+  - name: storage-instruction-s3-credentials-first
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Upload the local file script.sh to the evroc bucket my-bucket.
+    workspace:
+      - src: fixtures/seed/bucket-my-bucket
+        dest: .evroc-state/bucket/my-bucket
+      - src: fixtures/seed/script.sh
+        dest: script.sh
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-instruction-s3-credentials-first
+        weight: 1.0
+
+  - name: storage-instruction-delete-bucket
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Delete my evroc bucket my-bucket and everything in it. The bucket is not empty.
+    workspace:
+      - src: fixtures/seed/bucket-my-bucket
+        dest: .evroc-state/bucket/my-bucket
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-instruction-delete-bucket
+        weight: 1.0
+
+  - name: storage-instruction-versioning-vs-locking
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a bucket called locked-bucket with object locking so I can retain files for 30 days.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py storage-instruction-versioning-vs-locking
+        weight: 1.0
+
+  # ============================================================
+  # evroc-think (10 cases: 4 trigger, 3 negative, 3 instruction)
+  # ============================================================
+  - name: think-should-trigger-dedicated-instance
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Deploy a dedicated Mistral model on evroc with an H100 GPU. Call the instance my-mistral.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-should-trigger-dedicated-instance
+        weight: 1.0
+
+  - name: think-should-trigger-shared-model
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      List the evroc shared models I can use.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-should-trigger-shared-model
+        weight: 1.0
+
+  - name: think-should-trigger-api-key
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an API key for evroc Think called my-key.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-should-trigger-api-key
+        weight: 1.0
+
+  - name: think-should-trigger-code-agent
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Launch Claude Code with evroc Think as the model backend.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-should-trigger-code-agent
+        weight: 1.0
+
+  - name: think-not-trigger-compute
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a VM on evroc named web-server.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-not-trigger-compute
+        weight: 1.0
+
+  - name: think-not-trigger-storage
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an S3 bucket on evroc called app-logs.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-not-trigger-storage
+        weight: 1.0
+
+  - name: think-not-trigger-iam
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Grant the computeOperator role to user /iam/users/abc123 on evroc.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-not-trigger-iam
+        weight: 1.0
+
+  - name: think-instruction-size-format
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a dedicated Think instance called my-inst with 1 B200 GPU. Use the model mistralai/Ministral-8B-Instruct-2410.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-instruction-size-format
+        weight: 1.0
+
+  - name: think-instruction-model-handle
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands and verify the result. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a Think instance called my-inst with the latest Mistral model. Use size 1-b200-27c-240g.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-instruction-model-handle
+        weight: 1.0
+
+  - name: think-instruction-shared-vs-dedicated
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      I want to run inference on evroc. What are my options?
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py think-instruction-shared-vs-dedicated
+        weight: 1.0
+
+  # ============================================================
+  # evroc-rancher (9 cases: 3 trigger, 3 negative, 3 instruction)
+  # ============================================================
+  - name: rancher-should-trigger-deploy
+    instruction: |
+      Deploy Rancher on evroc. My SSH public key is "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAImockkey user@evroc" and my Rancher admin password is "my-super-secret-pw-14chars". Use work directory /tmp/rancher-deploy. Use default region se-sto, zone a, prefix rancher, 1 workload node.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-should-trigger-deploy
+        weight: 1.0
+
+  - name: rancher-should-trigger-destroy
+    instruction: |
+      Tear down my evroc Rancher deployment. The work directory is /tmp/rancher-deploy.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-should-trigger-destroy
+        weight: 1.0
+
+  - name: rancher-should-trigger-status
+    instruction: |
+      Is my Rancher deployment on evroc ready yet? The server IP is 10.0.0.10.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-should-trigger-status
+        weight: 1.0
+
+  - name: rancher-not-trigger-bare-vm
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create a VM on evroc named web-server.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-not-trigger-bare-vm
+        weight: 1.0
+
+  - name: rancher-not-trigger-iam
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Create an evroc project and grant me owner. My user ID is /iam/users/abc123.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-not-trigger-iam
+        weight: 1.0
+
+  - name: rancher-not-trigger-think
+    instruction: |
+      Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
+      Deploy a Mistral model on evroc with a dedicated instance.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-not-trigger-think
+        weight: 1.0
+
+  - name: rancher-instruction-prerequisite-check
+    instruction: |
+      Deploy Rancher on evroc. My SSH public key is "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAImockkey user@evroc" and my Rancher admin password is "my-super-secret-pw-14chars". Use work directory /tmp/rancher-deploy.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-instruction-prerequisite-check
+        weight: 1.0
+
+  - name: rancher-instruction-bootstrap-patience
+    instruction: |
+      Deploy Rancher on evroc and give me the URL. My SSH public key is "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAImockkey user@evroc" and my Rancher admin password is "my-super-secret-pw-14chars". Use work directory /tmp/rancher-deploy. Use default region se-sto, zone a, prefix rancher, 1 workload node.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-instruction-bootstrap-patience
+        weight: 1.0
+
+  - name: rancher-instruction-input-collection
+    instruction: |
+      Deploy Rancher on evroc with 2 worker nodes. My SSH public key is "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAImockkey user@evroc" and my Rancher admin password is "my-super-secret-pw-14chars". Use work directory /tmp/rancher-deploy.
+    graders:
+      - type: deterministic
+        run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py rancher-instruction-input-collection
+        weight: 1.0
