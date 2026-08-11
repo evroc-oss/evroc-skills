@@ -87,7 +87,7 @@ Claude Code discovers skills from `.claude/skills/` (project-level) or `~/.claud
 ```bash
 git clone https://github.com/evroc-oss/evroc-skills.git
 mkdir -p .claude/skills
-cp -r evroc-skills/skills/evroc-rancher .claude/skills/
+cp -r evroc-skills/skills/ .claude/skills/
 ```
 
 **Global** (available in all projects):
@@ -95,7 +95,7 @@ cp -r evroc-skills/skills/evroc-rancher .claude/skills/
 ```bash
 git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
 mkdir -p ~/.claude/skills
-ln -s ~/evroc-skills/skills/evroc-rancher ~/.claude/skills/evroc-rancher
+ln -s ~/evroc-skills/skills/ ~/.claude/skills/
 ```
 
 ### Cursor
@@ -107,7 +107,7 @@ Cursor discovers skills from `.cursor/skills/`, `.agents/skills/`, `.claude/skil
 ```bash
 git clone https://github.com/evroc-oss/evroc-skills.git
 mkdir -p .cursor/skills
-cp -r evroc-skills/skills/evroc-rancher .cursor/skills/
+cp -r evroc-skills/skills/ .cursor/skills/
 ```
 
 **Global:**
@@ -115,7 +115,7 @@ cp -r evroc-skills/skills/evroc-rancher .cursor/skills/
 ```bash
 git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
 mkdir -p ~/.cursor/skills
-ln -s ~/evroc-skills/skills/evroc-rancher ~/.cursor/skills/evroc-rancher
+ln -s ~/evroc-skills/skills/evroc-rancher ~/.cursor/skills/
 ```
 
 ### OpenCode
@@ -127,7 +127,7 @@ OpenCode discovers skills from `.opencode/skills/`, `.claude/skills/`, `.agents/
 ```bash
 git clone https://github.com/evroc-oss/evroc-skills.git
 mkdir -p .opencode/skills
-cp -r evroc-skills/skills/evroc-rancher .opencode/skills/
+cp -r evroc-skills/skills/ .opencode/skills/
 ```
 
 **Global:**
@@ -135,8 +135,7 @@ cp -r evroc-skills/skills/evroc-rancher .opencode/skills/
 ```bash
 git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
 mkdir -p ~/.config/opencode/skills
-ln -s ~/evroc-skills/skills/evroc-rancher ~/.config/opencode/skills/evroc-rancher
-```
+ln -s ~/evroc-skills/skills/ ~/.config/opencode/skills/
 
 ### Hermes Agent
 
@@ -144,7 +143,7 @@ Hermes discovers skills from `~/.hermes/skills/`.
 
 ```bash
 git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
-ln -s ~/evroc-skills/skills/evroc-rancher ~/.hermes/skills/evroc-rancher
+ln -s ~/evroc-skills/skills/ ~/.hermes/skills/
 ```
 
 ## License
