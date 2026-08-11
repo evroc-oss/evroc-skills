@@ -1,20 +1,21 @@
 ---
 name: evroc-loadbalancer
-description: "Manage evroc load balancers: create and configure load balancers, backend pools, backend services, L4 routes, and listeners via the evroc CLI. Use when the user wants to set up load balancing for VMs, configure health checks, or manage traffic routing on evroc cloud."
+description: "Use when the user wants to create, configure, or delete evroc load balancers, backend pools, backend services, health checks, L4 routes, or listeners. Requires the evroc CLI and a pre-existing public IP. Do NOT trigger for compute VMs, IAM, storage buckets, or Think models."
 license: Apache-2.0
-compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux. Load balancer is a beta feature."
+compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux. This is a beta service — syntax may change between releases. First terraform init downloads the evroc provider from registry.terraform.io (~20 MB)."
 metadata:
   author: evroc
-  version: "1.0"
-  category: infrastructure
-allowed-tools: terminal
+  version: "1.1"
+  category: networking
+allowed-tools: terminal, read_file
 ---
 
 # evroc-loadbalancer
 
-Manage evroc load balancers through the `evroc loadbalancer` CLI. Covers load balancer creation, backend pools, backend services, health checks, L4 routes, and listeners. This service is currently in beta.
+Manage evroc load balancers through the `evroc loadbalancer` CLI.
+Covers backend pools, backend services, health checks, L4 routes, and listeners.
 
-For full CLI flag reference, read [`references/cli-reference.md`](references/cli-reference.md).
+Read the full CLI reference when needed: [`references/cli-reference.md`](references/cli-reference.md).
 
 ## When to Use
 
@@ -24,28 +25,30 @@ For full CLI flag reference, read [`references/cli-reference.md`](references/cli
 - User wants to configure L4 routes and listeners for traffic distribution
 - User mentions "evroc" with "load balancer", "LB", "backend pool", or "health check"
 
+**Do NOT use for:** compute VMs, IAM, storage, or Think models.
+
 ## Prerequisites
 
-The evroc CLI must be installed and authenticated:
+Run the auth check first:
 
 ```bash
-evroc login
+bash scripts/check-auth.sh
 ```
 
-A public IP and subnet must exist before creating a load balancer. Create them first:
+A public IP and subnet must exist before creating a load balancer:
 
 ```bash
-# Create a public IP
+# Create a public IP first
 evroc networking publicip create my-lb-ip
-
-# Note the subnet name (format: default-<region>-<zone>, e.g. default-se-sto-a)
 ```
+
+Note the subnet name (format: `default-<region>-<zone>`, e.g. `default-se-sto-a`).
 
 ## Load Balancer Lifecycle
 
-A load balancer has a hierarchy: load balancer → listeners → L4 routes → backend services → backend pools → backends (VMs).
+Hierarchy: load balancer → listeners → L4 routes → backend services → backend pools → backends (VMs).
 
-### 1. Create backend pool (groups VMs)
+### 1. Create backend pool
 
 ```bash
 evroc loadbalancer backendpool create my-pool \
@@ -53,7 +56,7 @@ evroc loadbalancer backendpool create my-pool \
   --backend-ref my-vm-2
 ```
 
-### 2. Create backend service (defines port + protocol)
+### 2. Create backend service
 
 ```bash
 evroc loadbalancer backendservice create my-service \
@@ -62,9 +65,9 @@ evroc loadbalancer backendservice create my-service \
   --ip-protocol-selection IPv4
 ```
 
-### 3. Set health check (optional but recommended)
+### 3. Set health check
 
-HTTP health check:
+HTTP:
 
 ```bash
 evroc loadbalancer backendservice sethealthcheckhttp my-service \
@@ -78,7 +81,7 @@ evroc loadbalancer backendservice sethealthcheckhttp my-service \
   --method GET
 ```
 
-TCP health check:
+TCP:
 
 ```bash
 evroc loadbalancer backendservice sethealthchecktcp my-service \
@@ -89,7 +92,7 @@ evroc loadbalancer backendservice sethealthchecktcp my-service \
   --unhealthy-threshold 3
 ```
 
-### 4. Create L4 route (routes traffic to a backend service)
+### 4. Create L4 route
 
 ```bash
 evroc loadbalancer l4route create my-route \
@@ -103,7 +106,7 @@ evroc loadbalancer loadbalancer create my-lb \
   --public-ip-ref my-lb-ip
 ```
 
-### 6. Add a listener (exposes a port on the load balancer)
+### 6. Add listener
 
 ```bash
 evroc loadbalancer loadbalancer addlistener my-lb \
@@ -113,40 +116,23 @@ evroc loadbalancer loadbalancer addlistener my-lb \
   --listener-route-ref my-route
 ```
 
-**Completion criterion:** `evroc loadbalancer loadbalancer get my-lb` returns the load balancer with the listener, route, service, and pool attached.
+**Completion criterion:** `evroc loadbalancer loadbalancer get my-lb -o yaml | grep -E '^\s+listeners:'` shows the listener attached.
 
 ## List and Inspect
 
-### List load balancers
-
 ```bash
+# List all
 evroc loadbalancer loadbalancer list
 
 # With details
 evroc loadbalancer loadbalancer list -o yaml
-```
 
-### Get load balancer details
+# Get specific
+evroc loadbalancer loadbalancer get my-lb -o yaml
 
-```bash
-evroc loadbalancer loadbalancer get my-lb
-```
-
-### List backend pools
-
-```bash
+# List related resources
 evroc loadbalancer backendpool list
-```
-
-### List backend services
-
-```bash
 evroc loadbalancer backendservice list
-```
-
-### List L4 routes
-
-```bash
 evroc loadbalancer l4route list
 ```
 
@@ -162,7 +148,7 @@ evroc loadbalancer loadbalancer removelistener my-lb \
 Delete in reverse order: listener → load balancer → L4 route → backend service → backend pool.
 
 ```bash
-evroc loadbalancer loadbalancer delete my-lb --force
+evroc loadbalancer loadbalancer delete my-lb -f
 evroc loadbalancer l4route delete my-route
 evroc loadbalancer backendservice delete my-service
 evroc loadbalancer backendpool delete my-pool
@@ -170,10 +156,10 @@ evroc loadbalancer backendpool delete my-pool
 
 ## Pitfalls
 
-- **Beta feature**: The load balancer service is in beta. Command syntax may change between releases.
 - **Public IP required**: A load balancer requires a pre-existing public IP referenced by `--public-ip-ref`.
-- **Hierarchy order**: Create resources bottom-up: pool → service → route → load balancer → listener. Delete top-down.
+- **Hierarchy order**: Create bottom-up (pool → service → route → load balancer → listener). Delete top-down.
 - **Listener protocol**: Currently only `TCP` is supported for listener protocol.
-- **Health check ports**: The `--target-port` on a health check is the port on the backend VM, not the listener port. These can differ.
+- **Health check target-port**: The `--target-port` on a health check is the port on the backend VM, not the listener port. These can differ.
 - **Backend references**: `--backend-ref` on a backend pool refers to VM names. Repeatable for multiple VMs.
+- **Beta service**: The load balancer service is in beta. Command syntax and resource semantics may change between releases.
 - **CLI aliases**: `lb` for `loadbalancer`, `bp` for `backendpool`, `bs` for `backendservice`, `l4r` for `l4route`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`.

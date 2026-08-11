@@ -1,26 +1,39 @@
 #!/usr/bin/env bash
-# status.sh — check deployment status (cloud-init, K3s, Rancher pods)
-# Usage: status.sh <rancher_node_ip>
+# evroc-rancher status checker
+# SSHs into the Rancher server node and runs health checks.
+
 set -euo pipefail
 
-IP="$1"
+SERVER_IP="$1"
+SSH_KEY="${2:-${HOME}/.ssh/id_ed25519}"
+SSH_USER="${3:-ubuntu}"
 
-if [ -z "$IP" ]; then
-  echo "Usage: status.sh <rancher_node_ip>"
-  exit 1
+if [[ -z "${SERVER_IP}" ]]; then
+    echo "Usage: $0 <rancher_server_ip> [ssh_key_path] [ssh_user]"
+    exit 1
 fi
 
-echo "=== Cloud-init status ==="
-ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new "ubuntu@$IP" "sudo cloud-init status" 2>/dev/null || echo "Cannot SSH to $IP"
+echo "Checking Rancher server at ${SERVER_IP}..."
+echo ""
+
+echo "1. cloud-init status"
+ssh -o StrictHostKeyChecking=no "${SSH_USER}@${SERVER_IP}" "sudo cloud-init status" || echo "   (cloud-init not yet finishing — this is normal during bootstrap)"
 
 echo ""
-echo "=== K3s nodes ==="
-ssh -o ConnectTimeout=10 "ubuntu@$IP" "sudo k3s kubectl get nodes" 2>/dev/null || echo "K3s not ready yet"
+echo "2. K3s nodes"
+ssh -o StrictHostKeyChecking=no "${SSH_USER}@${SERVER_IP}" "sudo k3s kubectl get nodes" || echo "   (K3s not ready yet)"
 
 echo ""
-echo "=== Rancher pods ==="
-ssh -o ConnectTimeout=10 "ubuntu@$IP" "sudo k3s kubectl -n cattle-system get pods" 2>/dev/null || echo "Rancher not ready yet"
+echo "3. Rancher pods"
+ssh -o StrictHostKeyChecking=no "${SSH_USER}@${SERVER_IP}" "sudo k3s kubectl -n cattle-system get pods" || echo "   (Rancher namespace not found)"
 
 echo ""
-echo "=== cert-manager pods ==="
-ssh -o ConnectTimeout=10 "ubuntu@$IP" "sudo k3s kubectl -n cert-manager get pods" 2>/dev/null || echo "cert-manager not ready yet"
+echo "4. cert-manager pods"
+ssh -o StrictHostKeyChecking=no "${SSH_USER}@${SERVER_IP}" "sudo k3s kubectl -n cert-manager get pods" || echo "   (cert-manager not yet installed)"
+
+echo ""
+echo "5. Rancher rollout status"
+ssh -o StrictHostKeyChecking=no "${SSH_USER}@${SERVER_IP}" "sudo k3s kubectl -n cattle-system rollout status deploy/rancher" || echo "   (rollout not yet complete)"
+
+echo ""
+echo "Status check complete."

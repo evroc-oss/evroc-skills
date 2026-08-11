@@ -1,20 +1,21 @@
 ---
 name: evroc-compute
-description: "Manage evroc compute resources: virtual machines, disks, snapshots, and placement groups via the evroc CLI. Use when the user wants to create, list, inspect, update, or delete VMs and disks on evroc cloud."
+description: "Use when the user wants to create, list, inspect, update, or delete evroc VMs, disks, snapshots, or placement groups. Requires the evroc CLI. Do NOT trigger for IAM, networking, storage buckets, load balancers, or Think model operations."
 license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.0"
+  version: "1.1"
   category: infrastructure
-allowed-tools: terminal
+allowed-tools: terminal, read_file
 ---
 
 # evroc-compute
 
-Manage evroc compute resources through the `evroc compute` CLI. Covers virtual machines, disks, snapshots, and placement groups.
+Manage evroc compute resources through the `evroc compute` CLI. Covers VMs, disks,
+snapshots, and placement groups.
 
-For full CLI flag reference, read [`references/cli-reference.md`](references/cli-reference.md).
+Read the full CLI reference when needed: [`references/cli-reference.md`](references/cli-reference.md).
 
 ## When to Use
 
@@ -22,20 +23,22 @@ For full CLI flag reference, read [`references/cli-reference.md`](references/cli
 - User wants to create or manage disks on evroc
 - User wants to take or manage disk snapshots
 - User wants to create placement groups for VM scheduling
-- User mentions "evroc" with "VM", "instance", "disk", or "compute"
+- User mentions "evroc" with "VM", "instance", "disk", "snapshot", or "compute"
+
+**Do NOT use for:** IAM, networking, storage (buckets), load balancers, or Think models.
 
 ## Prerequisites
 
-The evroc CLI must be installed and authenticated:
+Run the auth check first:
+
+```bash
+bash scripts/check-auth.sh
+```
+
+If it fails, authenticate:
 
 ```bash
 evroc login
-```
-
-Verify auth:
-
-```bash
-cat ~/.evroc/config.yaml
 ```
 
 ## Virtual Machines
@@ -43,14 +46,11 @@ cat ~/.evroc/config.yaml
 ### List VMs
 
 ```bash
-# Simple list of VM names
+# Names only
 evroc compute vm list
 
 # YAML output with full details
 evroc compute vm list -o yaml
-
-# JSON output
-evroc compute vm list -o json
 
 # Filter by label
 evroc compute vm list -l "team in (frontend,backend)"
@@ -59,25 +59,22 @@ evroc compute vm list -l "team in (frontend,backend)"
 ### Get VM details
 
 ```bash
-evroc compute vm get <vm-name>
-
-# JSON output
-evroc compute vm get <vm-name> -o json
+evroc compute vm get <vm-name> -o yaml
 ```
 
 ### Create a VM
 
-A VM requires a boot disk, a flavor (compute profile), a subnet, and a zone. Create the disk first, then the VM:
+Requires: a pre-existing boot disk, a flavor, a subnet, and a zone.
 
 ```bash
-# 1. Create a boot disk from an Ubuntu image
+# 1. Create boot disk
 evroc compute disk create my-boot-disk \
   --image=ubuntu-minimal-24.04.1 \
   --size-amount=50 \
   --size-unit=GB \
   --zone=a
 
-# 2. Create the VM
+# 2. Create VM
 evroc compute vm create my-vm \
   --vm-virtual-resources-ref=a1a.m \
   --disk=my-boot-disk \
@@ -89,11 +86,9 @@ evroc compute vm create my-vm \
   --running=true
 ```
 
-**Completion criterion:** `evroc compute vm get <vm-name>` returns the VM with status showing it exists and is running.
+**Completion criterion:** `evroc compute vm get <vm-name> -o yaml | grep -E '^\s+status:'` shows `Running`.
 
 ### Create a VM with cloud-init
-
-Pass user-data for automated provisioning:
 
 ```bash
 evroc compute vm create my-vm \
@@ -113,16 +108,14 @@ runcmd:
 ### Update a VM
 
 ```bash
-# Attach an additional disk (append mode keeps existing disks)
+# Attach an additional disk
 evroc compute vm update my-vm --append --disk=extra-disk --boot-from=false
 
 # Attach a security group
 evroc compute vm update my-vm --append --security-group=additional-sg
 
-# Stop a VM
+# Stop / start
 evroc compute vm update my-vm --running=false
-
-# Start a VM
 evroc compute vm update my-vm --running=true
 
 # Assign a public IP
@@ -132,13 +125,10 @@ evroc compute vm update my-vm --public-ip=my-public-ip-name
 ### Delete a VM
 
 ```bash
-evroc compute vm delete my-vm
-
-# Skip confirmation
-evroc compute vm delete my-vm --force
+evroc compute vm delete my-vm -f
 ```
 
-**Completion criterion:** `evroc compute vm get <vm-name>` returns an error (VM not found).
+**Completion criterion:** `evroc compute vm get <vm-name>` returns `not found`.
 
 ## Disks
 
@@ -147,17 +137,14 @@ evroc compute vm delete my-vm --force
 ```bash
 evroc compute disk list
 
-# With details
 evroc compute disk list -o yaml
-
-# Filter by label
 evroc compute disk list -l "environment=production"
 ```
 
 ### Get disk details
 
 ```bash
-evroc compute disk get <disk-name>
+evroc compute disk get <disk-name> -o yaml
 ```
 
 ### Create a disk
@@ -183,12 +170,14 @@ evroc compute disk create my-disk \
 ### Delete a disk
 
 ```bash
-evroc compute disk delete <disk-name>
+evroc compute disk delete <disk-name> -f
 ```
+
+**Completion criterion:** `evroc compute disk get <disk-name>` returns `not found`.
 
 ## Snapshots
 
-### Create a snapshot from a disk
+### Create a snapshot
 
 ```bash
 evroc compute snapshot create my-snapshot --disk-ref=my-disk
@@ -203,18 +192,16 @@ evroc compute snapshot list
 ### Get snapshot details
 
 ```bash
-evroc compute snapshot get <snapshot-name>
+evroc compute snapshot get <snapshot-name> -o yaml
 ```
 
 ### Delete a snapshot
 
 ```bash
-evroc compute snapshot delete <snapshot-name>
+evroc compute snapshot delete <snapshot-name> -f
 ```
 
 ## Placement Groups
-
-Placement groups control VM scheduling — e.g. spread VMs across physical hosts for resilience.
 
 ### Create a placement group
 
@@ -250,11 +237,18 @@ evroc compute placementgroup delete my-pg
 
 ## Pitfalls
 
-- **Disk before VM**: A VM requires a pre-existing boot disk. Create the disk first, then reference it by name in `--disk`.
-- **Boot-from flag**: When attaching a disk, `--boot-from=true` marks the boot disk. Additional disks use `--boot-from=false`. Every disk attachment must specify this flag.
-- **Subnet naming**: Subnets are region-zone scoped — the default is `default-<region>-<zone>` (e.g. `default-se-sto-a`). The zone in the subnet name must match the `--zone` flag.
-- **Flavor format**: Compute profiles use `<series>.<size>` — e.g. `a1a.m`, `c1a.l`, `m1a.xl`. Series include `a1a` (general), `c1a` (compute-optimized), `m1a` (memory-optimized).
-- **CLI aliases**: `vm` is an alias for `virtualmachine`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`. Both forms work.
-- **Output formats**: `-o yaml` (default for get), `-o json`, `-o list` (default for list, shows just names). Use `yaml` or `json` when you need full resource details.
-- **Label selectors**: Use Kubernetes-style syntax — `key=value`, `key in (val1,val2)`, `!key`. Works with both user labels and system labels.
-- **Delete order**: Delete VMs before deleting their attached disks. Disks must be detached (VM deleted) before they can be removed.
+- **Disk before VM**: Always create the boot disk first. The VM references it by name.
+- **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
+  `false` for data).
+- **Subnet naming**: Pattern is `default-<region>-<zone>`. The zone in the subnet name must
+  match `--zone`.
+- **Flavor format**: `<series>.<size>` — e.g. `a1a.m`, `c1a.l`. Series: `a1a` (general),
+  `c1a` (compute-optimized), `m1a` (memory-optimized).
+- **Delete order**: Delete VMs before their attached disks. Disks must be detached before
+  deletion.
+- **Output formats**: `-o yaml` (default for `get`), `-o json`, `-o list` (default for `list`,
+  shows names only). Use `yaml` or `json` when you need full resource details.
+- **Label selectors**: Kubernetes-style syntax: `key=value`, `key in (val1,val2)`, `!key`.
+  Works with user labels and system labels.
+- **Name rules**: Max 63 chars, lowercase alphanumeric with hyphens, starting/ending
+  alphanumeric.

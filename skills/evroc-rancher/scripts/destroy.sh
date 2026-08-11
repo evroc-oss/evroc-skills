@@ -1,16 +1,24 @@
 #!/usr/bin/env bash
-# destroy.sh — destroy the Rancher on evroc deployment
-# Usage: destroy.sh <workdir>
+# evroc-rancher destroy script
+# Runs terraform destroy in the work directory.
+
 set -euo pipefail
 
-WORKDIR="${1:-.}"
+WORKDIR="${1:-}"
 
-if [ ! -f "$WORKDIR/main.tf" ]; then
-  echo "ERROR: No Terraform files found in $WORKDIR"
-  exit 1
+if [[ -z "${WORKDIR}" ]]; then
+    echo "Usage: $0 <workdir>"
+    exit 1
 fi
 
-cd "$WORKDIR"
+if [[ ! -f "${WORKDIR}/terraform.tfstate" ]] && [[ ! -d "${WORKDIR}/.terraform" ]]; then
+    echo "Error: No Terraform state found in ${WORKDIR}"
+    exit 1
+fi
+
+cd "${WORKDIR}"
+echo "Running terraform destroy in ${WORKDIR}..."
 terraform destroy -auto-approve
+
 echo ""
-echo "=== Destroy Complete ==="
+echo "✓ Destroy complete. All resources removed from evroc."

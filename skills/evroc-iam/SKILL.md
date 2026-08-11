@@ -1,24 +1,25 @@
 ---
 name: evroc-iam
-description: "Manage evroc IAM resources: projects, role bindings, service accounts, and credentials via the evroc CLI. Use when the user wants to create projects, grant or revoke roles, manage service accounts, or inspect permissions on evroc cloud."
+description: "Use when the user wants to create, list, inspect, or delete evroc projects; grant or revoke role bindings; manage service accounts and their credentials; or retrieve an access token. Requires the evroc CLI. Do NOT trigger for compute, networking, storage, or Think model tasks."
 license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.0"
-  category: infrastructure
-allowed-tools: terminal
+  version: "1.1"
+  category: security
+allowed-tools: terminal, read_file
 ---
 
 # evroc-iam
 
-Manage evroc Identity and Access Management through the `evroc iam` CLI. Covers
-projects, role bindings, service accounts, and credentials. evroc IAM uses a
-principal-role-permission model: you grant predefined roles (collections of
-permissions) to principals (users or service accounts) on a scope (project or
-organization).
+Manage evroc Identity and Access Management through the `evroc iam` CLI.
+Covers projects, role bindings, service accounts, and credentials.
 
-For full CLI flag reference, read [`references/cli-reference.md`](references/cli-reference.md).
+evroc IAM uses a principal-role-permission model: predefined roles (collections of
+permissions) are granted to principals (users or service accounts) on a scope
+(project or organization).
+
+Read the full CLI reference when needed: [`references/cli-reference.md`](references/cli-reference.md).
 
 ## When to Use
 
@@ -29,24 +30,23 @@ For full CLI flag reference, read [`references/cli-reference.md`](references/cli
 - User wants to retrieve an access token for API calls
 - User mentions "evroc" with "IAM", "project", "role", "permission", "service account", or "access"
 
+**Do NOT use for:** compute VMs, networking, storage buckets, load balancers, or Think models.
+
 ## Prerequisites
 
-The evroc CLI must be installed and authenticated:
+Run the auth check first:
+
+```bash
+bash scripts/check-auth.sh
+```
+
+If it fails:
 
 ```bash
 evroc login
 ```
 
-Verify auth:
-
-```bash
-cat ~/.evroc/config.yaml
-```
-
 ## Projects
-
-Projects are isolated containers for cloud resources with their own access
-controls and quota tracking.
 
 ### List projects
 
@@ -59,9 +59,6 @@ evroc iam project list
 ```bash
 evroc iam project create my-project --name "My Project"
 ```
-
-- `<project_id>` — Required. Lowercase alphanumeric with hyphens, max 63 chars.
-- `--name` — Optional display name. Defaults to the project ID.
 
 **Completion criterion:** `evroc iam project get my-project` returns the project.
 
@@ -80,13 +77,10 @@ evroc iam project update my-project --name "New Name"
 ### Delete a project
 
 ```bash
-evroc iam project delete my-project
-
-# Skip confirmation
-evroc iam project delete my-project --force
+evroc iam project delete my-project -f
 ```
 
-**Completion criterion:** `evroc iam project get my-project` returns an error (not found).
+**Completion criterion:** `evroc iam project get my-project` returns `not found`.
 
 ### Set current project
 
@@ -94,37 +88,27 @@ evroc iam project delete my-project --force
 evroc config set-project my-project
 ```
 
-All subsequent CLI commands operate on this project until you switch.
-
 ## Role Bindings
-
-Role bindings grant predefined roles to principals (users or service accounts)
-on a project or organization scope. Roles are additive — a principal with
-multiple roles receives the union of all permissions.
 
 ### List available roles
 
 ```bash
 evroc iam rolebinding roles
-
-# Shortcut
-evroc iam rb roles
 ```
 
-Use the role `id` value (e.g. `/iam/roles/computeOperator`) when granting access.
+Use the role `id` (e.g. `/iam/roles/computeOperator`) when granting.
 
 ### Grant a project role
 
 ```bash
-evroc config set-project my-project
 evroc iam rb assign \
   --principal /iam/users/<user-id> \
   --role /iam/roles/projectOwner
 ```
 
-### Grant access to specific resources only
+### Scope a role to specific resources
 
-Limit a role to specific resource FQIDs with `--resource` (repeatable):
+Limit to specific resource FQIDs with `--resource` (repeatable):
 
 ```bash
 evroc iam rb assign \
@@ -133,10 +117,9 @@ evroc iam rb assign \
   --resource /compute/projects/my-project/regions/se-sto/virtualMachines/my-vm
 ```
 
-Use `*` as a wildcard for a single path segment:
+Wildcards for one path segment:
 
 ```bash
-# All VMs in one region
 --resource /compute/projects/my-project/regions/se-sto/virtualMachines/*
 ```
 
@@ -149,9 +132,6 @@ evroc iam rb assign \
   --organization
 ```
 
-Organization roles govern org-level IAM operations only. They don't grant
-access to resources inside projects.
-
 ### List role bindings
 
 ```bash
@@ -161,7 +141,7 @@ evroc iam rb list
 # In the current organization
 evroc iam rb list --organization
 
-# Your own role bindings across all scopes
+# Your own bindings across all scopes
 evroc iam rb list-me
 ```
 
@@ -185,14 +165,14 @@ evroc iam rb revoke \
 evroc iam rb delete <binding-name>
 ```
 
-This revokes every role in the binding for that principal on the selected scope.
+This revokes every role for that principal on the selected scope.
 
 ### Test permissions via API
 
 ```bash
 TOKEN=$(evroc iam get-access-token)
 curl -X POST \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
     "checks": [
@@ -207,17 +187,11 @@ curl -X POST \
 
 ## Service Accounts
 
-Service accounts are identities for automation. Grant roles to service
-accounts the same way as users — use the service account FQID as the principal.
-
 ### Create a service account
 
 ```bash
 evroc iam serviceaccount create my-sa --description "CI/CD automation"
 ```
-
-- `--enabled` — Enable or disable (default: true).
-- `--description` — Human-readable description.
 
 ### List service accounts
 
@@ -261,17 +235,11 @@ evroc iam serviceaccount delete my-sa
 
 ## Access Tokens
 
-### Get an access token
-
 ```bash
+# Get a short-lived bearer token
 evroc iam get-access-token
-```
 
-Returns a short-lived bearer token for authenticating against evroc APIs.
-
-### Get current user info
-
-```bash
+# Get current user info
 evroc iam get-user-info
 ```
 
@@ -279,42 +247,35 @@ evroc iam get-user-info
 
 | Role | Scope | Description |
 |---|---|---|
-| `/iam/roles/projectOwner` | project | Full control over a project |
+| `/iam/roles/projectOwner` | project | Full control |
 | `/iam/roles/projectContributor` | project | Create/manage resources, no access management |
-| `/iam/roles/computeOperator` | project | Create/manage compute resources |
+| `/iam/roles/computeOperator` | project | Manage compute resources |
 | `/iam/roles/computeViewer` | project | Read-only compute access |
-| `/iam/roles/storageOperator` | project | Manage storage buckets and contents |
+| `/iam/roles/storageOperator` | project | Manage storage buckets |
 | `/iam/roles/networkingOperator` | project | Manage networking resources |
 | `/iam/roles/thinkOperator` | project | Manage Think instances and API keys |
 | `/iam/roles/organizationOwner` | organization | Full org control |
 | `/iam/roles/organizationViewer` | organization | Read-only org access |
 | `/iam/roles/organizationAccessAdministrator` | organization | Manage role bindings and users |
 
-Use `evroc iam rb roles` for the complete list with permissions.
+Run `evroc iam rb roles` for the complete list.
 
 ## Pitfalls
 
-- **Principals use FQIDs, not emails**: Role bindings reference users by their
-  user ID (e.g. `/iam/users/5a9bb4ea-...`), not by email address. Find user IDs
-  in the evroc Console → Users Management section.
-- **Organization roles don't grant project access**: Organization roles govern
-  org-level operations only. Grant project roles for access to resources inside
-  projects.
-- **Role assignment is idempotent**: If the principal already has the role,
-  the request replaces the role's resource list. Pass `--resource` to scope,
-  or omit it to grant on all applicable resources.
-- **PermissionSets are deprecated**: Use role bindings instead. PermissionSets
-  were a binary admin/not-admin model; role bindings provide fine-grained
-  predefined roles with resource-level scoping.
-- **Custom roles not available**: Only predefined roles are supported. Custom
-  roles, deny rules, and condition-based bindings are not yet available.
-- **Resource name limits**: All resource names are capped at 63 characters,
-  lowercase alphanumeric with hyphens, starting and ending with an alphanumeric
-  character.
-- **MFA is OTP-only**: IAM supports time-based one-time password (TOTP) as the
-  only MFA mechanism.
-- **Brute force protection**: After 10 failed login attempts, the account is
-  temporarily locked with no visual indication. Wait 10 minutes before
-  retrying.
-- **CLI aliases**: `rb` for `rolebinding`, `sa` for `serviceaccount`, `ls` for
-  `list`, `rm`/`del` for `delete`, `new` for `create`.
+- **Principals use FQIDs, not emails**: Role bindings reference users by user ID
+  (e.g. `/iam/users/5a9bb4ea-...`), not email. Find user IDs in the evroc Console.
+- **Organization roles ≠ project access**: Organization roles govern only org-level
+  operations. Grant project roles for access to project resources.
+- **Role assignment is idempotent**: Re-running with the same principal+role replaces
+  the resource list. Use `--resource` to scope, or omit it for all resources.
+- **PermissionSets are deprecated**: Use role bindings. PermissionSets were a binary
+  admin model; role bindings provide fine-grained predefined roles.
+- **Custom roles not available**: Only predefined roles are supported. Custom roles,
+  deny rules, and condition-based bindings are not yet available.
+- **Resource name limits**: Max 63 chars, lowercase alphanumeric with hyphens,
+  starting/ending alphanumeric.
+- **MFA is OTP-only**: TOTP is the only supported MFA mechanism.
+- **Brute force protection**: After 10 failed login attempts, the account is locked for
+  ~10 minutes with no visual indication.
+- **CLI aliases**: `rb` for `rolebinding`, `sa` for `serviceaccount`, `ls` for `list`,
+  `rm`/`del` for `delete`, `new` for `create`.

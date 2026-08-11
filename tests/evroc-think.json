@@ -1,0 +1,89 @@
+{
+  "skill": "evroc-think",
+  "description": "Manage evroc Think Models (dedicated GPU instances, shared models, API keys, coding agent integration). Trigger on AI/model/inference/GPU keywords on evroc. Block on compute/IAM/storage/network.",
+  "cases": [
+    {
+      "id": "should-trigger-dedicated-instance",
+      "type": "trigger",
+      "query": "Deploy a dedicated Mistral model on evroc with H100",
+      "should_trigger": true,
+      "rationale": "Dedicated model instance on evroc"
+    },
+    {
+      "id": "should-trigger-shared-model",
+      "type": "trigger",
+      "query": "List the evroc shared models I can use",
+      "should_trigger": true,
+      "rationale": "Shared model listing"
+    },
+    {
+      "id": "should-trigger-api-key",
+      "type": "trigger",
+      "query": "Create an API key for evroc Think",
+      "should_trigger": true,
+      "rationale": "API key creation for Think"
+    },
+    {
+      "id": "should-trigger-code-agent",
+      "type": "trigger",
+      "query": "Launch Claude Code with evroc Think as the model backend",
+      "should_trigger": true,
+      "rationale": "Coding agent integration with Think"
+    },
+    {
+      "id": "not-trigger-compute",
+      "type": "negative-trigger",
+      "query": "Create a VM on evroc",
+      "should_trigger": false,
+      "correct_skill": "evroc-compute",
+      "rationale": "Bare VM, not Think model"
+    },
+    {
+      "id": "not-trigger-storage",
+      "type": "negative-trigger",
+      "query": "Create an S3 bucket on evroc",
+      "should_trigger": false,
+      "correct_skill": "evroc-storage",
+      "rationale": "Storage, not Think models"
+    },
+    {
+      "id": "not-trigger-iam",
+      "type": "negative-trigger",
+      "query": "Grant a role on evroc",
+      "should_trigger": false,
+      "correct_skill": "evroc-iam",
+      "rationale": "IAM, not Think models"
+    },
+    {
+      "id": "instruction-size-format",
+      "type": "instruction",
+      "query": "Create a dedicated instance with 1 B200 GPU",
+      "expected_behavior": [
+        "Lists available sizes with evroc think size list",
+        "Selects a size matching GPU type (B200) and count (1)",
+        "Uses correct size format: 1-b200-27c-240g (or similar)",
+        "Does NOT guess a size name"
+      ]
+    },
+    {
+      "id": "instruction-model-handle",
+      "type": "instruction",
+      "query": "Create an instance with the latest Mistral model",
+      "expected_behavior": [
+        "Lists models with evroc think model list (or model get for specific name)",
+        "Uses exact HuggingFace handle from the output",
+        "Does NOT invent or abbreviate model IDs"
+      ]
+    },
+    {
+      "id": "instruction-shared-vs-dedicated",
+      "type": "instruction",
+      "query": "I want to run inference on evroc",
+      "expected_behavior": [
+        "Explains the difference between Shared Models (zero deploy, ready now) and Dedicated Instances (isolated GPU, takes time)",
+        "Recommends Shared Models for quick trials and Dedicated for isolation/customization",
+        "Suggests evroc think sharedmodel list or evroc think instance create accordingly"
+      ]
+    }
+  ]
+}

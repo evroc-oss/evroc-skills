@@ -1,0 +1,83 @@
+{
+  "skill": "evroc-storage",
+  "description": "Manage evroc storage resources (buckets, file stores, bucket service accounts, S3 credentials). Trigger on storage/S3 keywords. Block on compute/IAM/network/Think.",
+  "cases": [
+    {
+      "id": "should-trigger-bucket-create",
+      "type": "trigger",
+      "query": "Create an evroc bucket called app-logs",
+      "should_trigger": true,
+      "rationale": "Bucket creation on evroc"
+    },
+    {
+      "id": "should-trigger-s3-copy",
+      "type": "trigger",
+      "query": "Copy my local backup.tar.gz to the evroc bucket backups",
+      "should_trigger": true,
+      "rationale": "Object copy operation on evroc storage"
+    },
+    {
+      "id": "should-trigger-file-store",
+      "type": "trigger",
+      "query": "Create an NFS file store on evroc in zone a",
+      "should_trigger": true,
+      "rationale": "File store (NFS) creation"
+    },
+    {
+      "id": "should-trigger-bucket-sa",
+      "type": "trigger",
+      "query": "Create a bucket service account that can access my-logs and my-data buckets",
+      "should_trigger": true,
+      "rationale": "Bucket service account creation"
+    },
+    {
+      "id": "not-trigger-compute",
+      "type": "negative-trigger",
+      "query": "Create an evroc VM",
+      "should_trigger": false,
+      "correct_skill": "evroc-compute",
+      "rationale": "Compute VM, not storage"
+    },
+    {
+      "id": "not-trigger-lb",
+      "type": "negative-trigger",
+      "query": "Create a load balancer on evroc",
+      "should_trigger": false,
+      "correct_skill": "evroc-loadbalancer",
+      "rationale": "Networking LB, not storage"
+    },
+    {
+      "id": "instruction-s3-credentials-first",
+      "type": "instruction",
+      "query": "Upload my script to the evroc bucket my-bucket",
+      "expected_behavior": [
+        "Runs evroc storage bucket get-s3-credentials first if not already present",
+        "Warns that bucket copy requires credentials in ~/.evroc/credentials.ini",
+        "Uses evroc storage bucket copy with --from and --to",
+        "Verifies with evroc storage bucket list"
+      ]
+    },
+    {
+      "id": "instruction-delete-bucket",
+      "type": "instruction",
+      "query": "Delete my evroc bucket and everything in it",
+      "expected_behavior": [
+        "If bucket is non-empty, uses --purge",
+        "If object locking is enabled, warns that --purge is ignored",
+        "Does not use --purge on an empty bucket (simple delete is enough)",
+        "Verifies with evroc storage bucket get (should return not found)"
+      ]
+    },
+    {
+      "id": "instruction-versioning-vs-locking",
+      "type": "instruction",
+      "query": "Create a bucket with object locking so I can retain files for 30 days",
+      "expected_behavior": [
+        "Uses --object-retention-mode=Locking",
+        "Uses --default-object-lock-mode=Soft",
+        "Uses --default-object-lock-duration-days=30",
+        "Does NOT confuse with Versioned mode (which is for versioning, not locking)"
+      ]
+    }
+  ]
+}

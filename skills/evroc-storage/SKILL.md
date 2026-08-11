@@ -1,20 +1,21 @@
 ---
 name: evroc-storage
-description: "Manage evroc storage resources: object storage buckets, S3 credentials, file stores, and bucket service accounts via the evroc CLI. Use when the user wants to create, list, inspect, or delete buckets, copy objects to/from buckets, manage file stores, or set up S3 access."
+description: "Use when the user wants to create, list, inspect, or delete evroc storage resources — S3-compatible buckets, file stores (NFS), or bucket service accounts. Requires the evroc CLI. Do NOT trigger for compute VMs, IAM, networking, load balancers, or Think models."
 license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.0"
+  version: "1.1"
   category: infrastructure
-allowed-tools: terminal
+allowed-tools: terminal, read_file
 ---
 
 # evroc-storage
 
-Manage evroc storage resources through the `evroc storage` CLI. Covers object storage (S3-compatible buckets), file stores (NFS), and bucket service accounts.
+Manage evroc storage resources through the `evroc storage` CLI. Covers S3-compatible
+buckets, file stores (NFS), and bucket service accounts.
 
-For full CLI flag reference, read [`references/cli-reference.md`](references/cli-reference.md).
+Read the full CLI reference when needed: [`references/cli-reference.md`](references/cli-reference.md).
 
 ## When to Use
 
@@ -25,18 +26,20 @@ For full CLI flag reference, read [`references/cli-reference.md`](references/cli
 - User wants to create a bucket service account for bucket access
 - User mentions "evroc" with "bucket", "storage", "S3", "file store", or "object storage"
 
+**Do NOT use for:** compute VMs, IAM, networking, load balancers, or Think models.
+
 ## Prerequisites
 
-The evroc CLI must be installed and authenticated:
+Run the auth check first:
+
+```bash
+bash scripts/check-auth.sh
+```
+
+If it fails:
 
 ```bash
 evroc login
-```
-
-Verify auth:
-
-```bash
-cat ~/.evroc/config.yaml
 ```
 
 ## Object Storage (Buckets)
@@ -46,76 +49,68 @@ cat ~/.evroc/config.yaml
 ```bash
 evroc storage bucket list
 
-# With details
 evroc storage bucket list -o yaml
-
-# Filter by label
 evroc storage bucket list -l "environment=production"
 ```
 
 ### Get bucket details
 
 ```bash
-evroc storage bucket get <bucket-name>
+evroc storage bucket get <bucket-name> -o yaml
 ```
 
 ### Create a bucket
 
 ```bash
+# Simple
 evroc storage bucket create my-bucket
-```
 
-With object versioning:
+# With object versioning
+evroc storage bucket create my-bucket --object-retention-mode=Versioned
 
-```bash
-evroc storage bucket create my-bucket \
-  --object-retention-mode=Versioned
-```
-
-With object locking:
-
-```bash
+# With object locking
 evroc storage bucket create my-bucket \
   --object-retention-mode=Locking \
   --default-object-lock-mode=Soft \
   --default-object-lock-duration-days=30
-```
 
-With a lifecycle policy (JSON):
-
-```bash
+# With a lifecycle policy
 evroc storage bucket create my-bucket \
   --lifecycle-policy=file://lifecycle-policy.json
 ```
 
 ### Get S3 credentials
 
-Before copying objects or using S3 clients, retrieve S3 credentials:
+Before copying objects or using S3 clients, retrieve credentials:
 
 ```bash
 evroc storage bucket get-s3-credentials
 
-# Credentials are written to ~/.evroc/credentials.ini by default
-# Specify a custom path:
+# Custom path
 evroc storage bucket get-s3-credentials --path /tmp/s3-creds.ini
 ```
 
-### Copy objects to/from a bucket
+Credentials are written to `~/.evroc/credentials.ini` by default.
+
+### Copy objects
 
 ```bash
-# Upload a local file to a bucket
+# Upload
 evroc storage bucket copy --from /path/to/local/file --to bucket://my-bucket/object-name
 
-# Download a bucket object to a local file
+# Download
 evroc storage bucket copy --from bucket://my-bucket/object-name --to /path/to/local/file
 
-# Copy between buckets
-evroc storage bucket copy --from bucket://source-bucket/object --to bucket://dest-bucket/object
+# Between buckets
+evroc storage bucket copy \
+  --from bucket://source-bucket/object \
+  --to bucket://dest-bucket/object
 ```
 
-### List objects in a bucket
+### List objects
 
 ```bash
+# Current objects
 evroc storage bucket list
 
 # Include deleted versions
@@ -128,23 +123,20 @@ evroc storage bucket list --include-all
 ### Delete a bucket or objects
 
 ```bash
-# Delete an empty bucket
+# Empty bucket
 evroc storage bucket delete my-bucket
 
-# Delete a non-empty bucket (purges all contents)
-evroc storage bucket delete my-bucket --purge
+# Non-empty bucket (purges all contents)
+evroc storage bucket delete my-bucket --purge -f
 
-# Skip confirmation
-evroc storage bucket delete my-bucket --force --purge
-
-# Delete a specific object
+# Specific object
 evroc storage bucket delete bucket://my-bucket/example.txt
 
-# Delete all objects but keep the bucket
-evroc storage bucket delete bucket://my-bucket/*
+# All objects, keep bucket
+evroc storage bucket delete bucket://my-bucket/* -f
 ```
 
-**Completion criterion:** `evroc storage bucket get <bucket-name>` returns an error (bucket not found) after deletion.
+**Completion criterion:** `evroc storage bucket get my-bucket` returns `not found`.
 
 ## File Stores (NFS)
 
@@ -158,24 +150,19 @@ evroc storage filestore create my-store --zone a
 
 ```bash
 evroc storage filestore list
-
-# With details
 evroc storage filestore list -o yaml
 ```
 
 ### Get file store details
 
 ```bash
-evroc storage filestore get <filestore-name>
+evroc storage filestore get <filestore-name> -o yaml
 ```
 
 ### Delete a file store
 
 ```bash
-evroc storage filestore delete my-store
-
-# Skip confirmation
-evroc storage filestore delete my-store --force
+evroc storage filestore delete my-store -f
 ```
 
 ## Bucket Service Accounts
@@ -194,13 +181,13 @@ evroc storage bucketserviceaccount create my-sa \
 evroc storage bucketserviceaccount list
 ```
 
-### Get bucket service account details
+### Get details
 
 ```bash
 evroc storage bucketserviceaccount get <service-account-name>
 ```
 
-### Delete a bucket service account
+### Delete
 
 ```bash
 evroc storage bucketserviceaccount delete my-sa
@@ -208,9 +195,16 @@ evroc storage bucketserviceaccount delete my-sa
 
 ## Pitfalls
 
-- **S3 credentials required for copy**: The `bucket copy` and `bucket list` (within buckets) commands read S3 credentials from `~/.evroc/credentials.ini`. Run `evroc storage bucket get-s3-credentials` first if you haven't already.
-- **Bucket must be empty to delete**: A non-empty bucket requires `--purge` to delete. If object locking is enabled, `--purge` is ignored and all versions must be deleted manually first.
-- **Object retention modes**: `Disabled` (default), `Suspended`, `Versioned`, `Locking`. Object lock requires the `Locking` mode and needs a default lock mode and duration.
-- **File store requires zone**: `--zone` is required for file store creation. The file store uses NFS v4.1.
-- **Bucket service accounts**: A service account must reference at least one bucket via `--bucket` (repeatable for multiple buckets).
-- **CLI aliases**: `bu` for `bucket`, `fs` for `filestore`, `bsa` for `bucketserviceaccount`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`.
+- **S3 credentials required for copy**: `bucket copy` and `bucket list` (within buckets)
+  read S3 credentials from `~/.evroc/credentials.ini`. Run
+  `evroc storage bucket get-s3-credentials` first if you haven't already.
+- **Bucket must be empty to delete**: Non-empty buckets require `--purge` to delete.
+  If object locking is enabled, `--purge` is ignored — delete all versions first.
+- **Object retention modes**: `Disabled` (default), `Suspended`, `Versioned`, `Locking`.
+  Object lock requires `Locking` mode and a default lock mode+duration.
+- **File store requires zone**: `--zone` is required for file store creation.
+  The file store uses NFS v4.1.
+- **Bucket service accounts**: Must reference at least one bucket via `--bucket`
+  (repeatable for multiple buckets).
+- **CLI aliases**: `bu` for `bucket`, `fs` for `filestore`, `bsa` for
+  `bucketserviceaccount`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`.

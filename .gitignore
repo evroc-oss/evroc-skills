@@ -1,13 +1,16 @@
-# Terraform
+# Terraform runtime artifacts (NOT .terraform.lock.hcl — that IS committed for reproducibility)
 .terraform/
-.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.*
 *.tfstate
-*.tfstate.*
+*.tfstate.backup
+.terraformrc
 *.tfvars
 !terraform.tfvars.example
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Editor
 *.swp
@@ -15,3 +18,11 @@
 *~
 .idea/
 .vscode/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+npm-debug.log*

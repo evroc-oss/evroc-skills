@@ -1,0 +1,107 @@
+{
+  "skill": "evroc-compute",
+  "description": "Manage evroc compute resources (VMs, disks, snapshots, placement groups). Trigger on compute/domain keywords. Block on IAM/network/storage/Think.",
+  "cases": [
+    {
+      "id": "should-trigger-vm-create",
+      "type": "trigger",
+      "query": "Create a new evroc VM named web-server in zone a with the a1a.m flavor",
+      "should_trigger": true,
+      "rationale": "Direct VM creation request on evroc cloud"
+    },
+    {
+      "id": "should-trigger-disk-create",
+      "type": "trigger",
+      "query": "I need to make an evroc boot disk from ubuntu-minimal-24.04.1",
+      "should_trigger": true,
+      "rationale": "Disk creation on evroc"
+    },
+    {
+      "id": "should-trigger-snapshot",
+      "type": "trigger",
+      "query": "Take a snapshot of my evroc disk called db-backup",
+      "should_trigger": true,
+      "rationale": "Snapshot creation on evroc"
+    },
+    {
+      "id": "should-trigger-placement-group",
+      "type": "trigger",
+      "query": "Set up a spread placement group on evroc for my cluster",
+      "should_trigger": true,
+      "rationale": "Placement group configuration on evroc"
+    },
+    {
+      "id": "should-trigger-generic-compute",
+      "type": "trigger",
+      "query": "List all my evroc instances and show their IPs",
+      "should_trigger": true,
+      "rationale": "VM listing on evroc (alias for instance)"
+    },
+    {
+      "id": "not-trigger-iam",
+      "type": "negative-trigger",
+      "query": "Grant the computeOperator role to my teammate on evroc",
+      "should_trigger": false,
+      "correct_skill": "evroc-iam",
+      "rationale": "IAM role binding, not compute provisioning"
+    },
+    {
+      "id": "not-trigger-storage",
+      "type": "negative-trigger",
+      "query": "Create an evroc S3 bucket for my app backups",
+      "should_trigger": false,
+      "correct_skill": "evroc-storage",
+      "rationale": "Storage bucket, not compute VM"
+    },
+    {
+      "id": "not-trigger-loadbalancer",
+      "type": "negative-trigger",
+      "query": "I need an evroc load balancer in front of my VMs",
+      "should_trigger": false,
+      "correct_skill": "evroc-loadbalancer",
+      "rationale": "Load balancer, not compute provisioning"
+    },
+    {
+      "id": "instruction-disk-before-vm",
+      "type": "instruction",
+      "query": "Create a VM named app-vm in zone a with a 100GB boot disk",
+      "expected_behavior": [
+        "First creates the disk with evroc compute disk create",
+        "Then creates the VM referencing the disk by name",
+        "Uses --zone=a consistently for both disk and VM",
+        "Verifies with evroc compute vm get app-vm"
+      ]
+    },
+    {
+      "id": "instruction-boot-from-flag",
+      "type": "instruction",
+      "query": "Attach an extra disk named data-disk to my existing VM app-vm",
+      "expected_behavior": [
+        "Uses --append flag on evroc compute vm update",
+        "Uses --disk=data-disk",
+        "Uses --boot-from=false for the data disk",
+        "Does NOT recreate the VM"
+      ]
+    },
+    {
+      "id": "instruction-delete-order",
+      "type": "instruction",
+      "query": "Delete my evroc VM app-vm and clean up its disk too",
+      "expected_behavior": [
+        "Deletes the VM first with evroc compute vm delete",
+        "Waits for VM deletion to finish",
+        "Then deletes the disk with evroc compute disk delete",
+        "Verifies disk is gone with evroc compute disk get"
+      ]
+    },
+    {
+      "id": "instruction-subnet-naming",
+      "type": "instruction",
+      "query": "Create a VM in zone b",
+      "expected_behavior": [
+        "Uses subnet name default-se-sto-b (not default-se-sto-a)",
+        "Matches the --zone flag with the subnet zone suffix"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "skill": "evroc-rancher",
+  "description": "Deploy Rancher Manager + K3s on evroc using Terraform. Trigger on Rancher + evroc deployment keywords. Block on bare VM, IAM, storage, Think.",
+  "cases": [
+    {
+      "id": "should-trigger-deploy",
+      "type": "trigger",
+      "query": "Deploy Rancher on evroc",
+      "should_trigger": true,
+      "rationale": "Direct Rancher + evroc deployment request"
+    },
+    {
+      "id": "should-trigger-destroy",
+      "type": "trigger",
+      "query": "Tear down my evroc Rancher deployment",
+      "should_trigger": true,
+      "rationale": "Rancher teardown on evroc"
+    },
+    {
+      "id": "should-trigger-status",
+      "type": "trigger",
+      "query": "Is my Rancher deployment on evroc ready yet?",
+      "should_trigger": true,
+      "rationale": "Rancher status check on evroc"
+    },
+    {
+      "id": "not-trigger-bare-vm",
+      "type": "negative-trigger",
+      "query": "Create a VM on evroc",
+      "should_trigger": false,
+      "correct_skill": "evroc-compute",
+      "rationale": "Bare VM, not Rancher orchestration"
+    },
+    {
+      "id": "not-trigger-iam",
+      "type": "negative-trigger",
+      "query": "Create an evroc project and grant me owner",
+      "should_trigger": false,
+      "correct_skill": "evroc-iam",
+      "rationale": "IAM task, not Rancher deployment"
+    },
+    {
+      "id": "not-trigger-think",
+      "type": "negative-trigger",
+      "query": "Deploy a Mistral model on evroc",
+      "should_trigger": false,
+      "correct_skill": "evroc-think",
+      "rationale": "Think model, not Rancher"
+    },
+    {
+      "id": "instruction-input-collection",
+      "type": "instruction",
+      "query": "Deploy Rancher on evroc with 2 worker nodes",
+      "expected_behavior": [
+        "Collects SSH public key (confirms or asks)",
+        "Collects Rancher admin password (must be >= 14 chars)",
+        "Asks for region (default: se-sto), zone (default: a), prefix (default: rancher)",
+        "Asks for work directory (default: ~/Developer/rancher-evroc-deployment)",
+        "Offers defaults for optional params before proceeding"
+      ]
+    },
+    {
+      "id": "instruction-prerequisite-check",
+      "type": "instruction",
+      "query": "Deploy Rancher on evroc",
+      "expected_behavior": [
+        "Runs scripts/prerequisites.sh first",
+        "If prerequisites.sh exits non-zero, reports what is missing and stops",
+        "Does NOT proceed to deploy.sh until all prerequisites pass"
+      ]
+    },
+    {
+      "id": "instruction-bootstrap-patience",
+      "type": "instruction",
+      "query": "Deploy Rancher on evroc and give me the URL",
+      "expected_behavior": [
+        "Runs terraform apply (provisions VMs ~5-8 min)",
+        "Warns that Rancher takes 5-10 minutes to become ready after VMs are up",
+        "Explains that 404 during bootstrap is normal",
+        "Suggests running scripts/status.sh to check health",
+        "Reports the URL from terraform output rancher_server_url",
+        "Reports the admin password (provided by user, never logs it)"
+      ]
+    }
+  ]
+}

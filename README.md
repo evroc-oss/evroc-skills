@@ -13,6 +13,13 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 | `evroc-iam` | Manage evroc IAM: projects, role bindings, service accounts, and credentials |
 | `evroc-think` | Manage evroc Think Models: dedicated instances, shared models, API keys, and coding agent integration |
 
+Each skill includes:
+- **Routing-optimized `description`** — clear "Use when... Do NOT use for..." triggers for agent routing
+- **`Pitfalls` section** — highest-value content per the Perplexity "Zen of Skills"
+- **Verifiable completion criteria** — exact commands to confirm success
+- **`references/`** — CLI flag references and domain-specific guides (progressive disclosure)
+- **`scripts/`** — deterministic helper scripts for fragile operations and auth checks
+
 ## Repository Structure
 
 ```
@@ -21,14 +28,20 @@ evroc-skills/
 └── skills/
     ├── evroc-compute/
     │   ├── SKILL.md
+    │   ├── scripts/
+    │   │   └── check-auth.sh
     │   └── references/
     │       └── cli-reference.md
     ├── evroc-iam/
     │   ├── SKILL.md
+    │   ├── scripts/
+    │   │   └── check-auth.sh
     │   └── references/
     │       └── cli-reference.md
     ├── evroc-loadbalancer/
     │   ├── SKILL.md
+    │   ├── scripts/
+    │   │   └── check-auth.sh
     │   └── references/
     │       └── cli-reference.md
     ├── evroc-rancher/
@@ -37,8 +50,10 @@ evroc-skills/
     │   │   ├── prerequisites.sh
     │   │   ├── deploy.sh
     │   │   ├── destroy.sh
-    │   │   └── status.sh
+    │   │   ├── status.sh
+    │   │   └── check-public-ip-quota.sh
     │   ├── assets/
+    │   │   ├── .terraform.lock.hcl
     │   │   ├── main.tf
     │   │   ├── variables.tf
     │   │   ├── terraform.tfvars.example
@@ -48,12 +63,17 @@ evroc-skills/
     │       └── troubleshooting.md
     ├── evroc-storage/
     │   ├── SKILL.md
+    │   ├── scripts/
+    │   │   └── check-auth.sh
     │   └── references/
     │       └── cli-reference.md
     └── evroc-think/
         ├── SKILL.md
+        ├── scripts/
+        │   └── check-auth.sh
         └── references/
-            └── cli-reference.md
+            ├── cli-reference.md
+            └── dedicated-instances.md
 ```
 
 ## Installation
