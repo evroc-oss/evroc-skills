@@ -18,7 +18,7 @@ Each `.json` file contains an array of test cases:
       "should_trigger": true,
       "expected_behavior": [
         "Runs evroc compute disk create first, before the VM",
-        "Uses --image=ubuntu-minimal-24.04.1 for the disk",
+        "Uses --image=ubuntu-minimal.24-04.1 for the disk",
         "Uses --disk=web-server-boot and --boot-from=true on the VM",
         "Uses evroc compute vm get to verify the VM is Running"
       ]

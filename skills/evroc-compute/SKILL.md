@@ -69,7 +69,7 @@ Requires: a pre-existing boot disk, a flavor, a subnet, and a zone.
 ```bash
 # 1. Create boot disk
 evroc compute disk create my-boot-disk \
-  --image=ubuntu-minimal-24.04.1 \
+  --image=ubuntu-minimal.24-04.1 \
   --size-amount=50 \
   --size-unit=GB \
   --zone=a
@@ -153,7 +153,7 @@ From an image:
 
 ```bash
 evroc compute disk create my-disk \
-  --image=ubuntu-minimal-24.04.1 \
+  --image=ubuntu-minimal.24-04.1 \
   --size-amount=100 \
   --size-unit=GB \
   --zone=a
@@ -237,6 +237,13 @@ evroc compute placementgroup delete my-pg
 
 ## Pitfalls
 
+- **Disk image names**: Image names use a specific format: `<distro>.<version>.1` (dot before
+  version, hyphen within version). e.g. `ubuntu-minimal.24-04.1`, `ubuntu.24-04.1`,
+  `rocky.9-6.1`. Do NOT use `ubuntu-minimal-24.04.1` (wrong separators) — the disk will be
+  created but never become Ready (`DiskImageInvalid`). Available images:
+  `ubuntu-minimal.24-04.1` (5 GB default), `ubuntu.24-04.1` (50 GB), `ubuntu.22-04.1`,
+  `rocky.10-1.1`, `rocky.9-6.1`, `rocky.8-10.1`, `opensuse.15-6.1`, `opensuse.15-5.1`,
+  `sles.15-6.1`, `sles.15-5.1`, `sl-micro.6-1.1`. GPU VMs support Ubuntu 24.04 only.
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
