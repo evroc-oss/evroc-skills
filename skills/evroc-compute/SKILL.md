@@ -162,34 +162,44 @@ runcmd:
 > cloud-init config itself.
 
 > **Runtime version compatibility:** When the user's application has runtime
-> dependencies (Java, Python, Node.js, Go, etc.), verify that the runtime version
+> dependencies (Java, Python, Node.js, Go, etc.), verify that the runtime version. **do NOT** assume
 > installed in the cloud-init `packages:` or `runcmd:` block is compatible with
 > the application version before deploying. A version mismatch causes the service
 > to crash silently — the VM is `Ready`, the port probe shows `CLOSED`, but there's
 > no obvious error without SSH access.
 >
-> **Workflow:**
+> **Mandatory Workflow:**
 > 1. Identify the application's runtime requirement (e.g. Java xx for an application,
    Python 3.11 for a specific framework, Node 20 for an app) - NOTE: These are only examples. 
-> 2. If the required version isn't obvious, web search the application's documentation
-   for the minimum runtime version
-> 3. Confirm the package name and version available in the OS image's package manager
-   (EXAMPLE: openjdk-21-jre-headless for Ubuntu 24.04, not openjdk-17-jre-headless)
-> 4. After choosing the OS image, verify the runtime version it provides. If the package manager cannot satisfy the requirement, add a step in runcmd to install the correct runtime (e.g., Adoptium tarball, NodeSource repo, deadsnakes PPA) rather than assuming the default package works.
-> 5. Present the compatibility check to the user:
-     "[INSERT APPLICATION] requires Java xx (class file version 65). Ubuntu 24.04's
-   openjdk-21-jre-headless provides Java xx — confirm this is what you want?" NOTE: This is only an example question, do NOT consider this factual.
-> 6. Only proceed with the cloud-init config once the user confirms
+> 2. **Web search** the application's official documentation to find the exact
+>    **minimum runtime version** required for that application version. Treat
+>    system knowledge as potentially stale — documentation is the source of truth
+> > 3. Once you have the runtime requirement, check the **OS image's package manager**
+>    (e.g. `openjdk-21-jre-headless` for Ubuntu 24.04, `python3.11` for
+>    Ubuntu 22.04, `nodejs` from NodeSource). Present the exact package name
+>    (or alternative installation method if apt does not provide it) to the user.
+> 4. If the OS image's default package manager cannot satisfy the required
+>    version, add a step in `runcmd` to install the correct runtime (e.g.
+>    Adoptium tarball, NodeSource repo, deadsnakes PPA, `pyenv`, `rustup`,
+>    language-specific version managers).
+>  5. Present the compatibility check to the user in this exact format:
+>       "**[INSERT APPLICATION]** requires **[INSERT RUNTIME] [VERSION]**.
+>       **[INSERT OS IMAGE]** provides **[INSERT PACKAGE]** which gives
+>       **[INSERT INSTALLED VERSION]** — confirm this is what you want?"
+> 6. **Only proceed with the cloud-init config once the user confirms.**
+>
 
 >
 > Common runtime version pitfalls:
 >
 > | Runtime | Issue | Fix |
 > |---|---|---|
-> | Java | App compiled with newer JDK than installed JRE | Match JRE version to app's compile target (e.g. class file 69 = Java 25, 65 = Java 21) |
-> | Python | App needs 3.11+ but image has 3.10 | Install via `deadsnakes` PPA or use `pyenv` in runcmd |
-> | Node.js | App needs Node 20 but image has Node 18 | Use NodeSource setup script in runcmd |
-> | Go | Binary compiled for wrong arch | Ensure `GOARCH` matches VM arch (amd64 vs arm64) |
+> | **Python** | App needs 3.11+ but image has 3.10 | Install via `deadsnakes` PPA, `pyenv`, or official Python source tarball |
+> | **Node.js** | App needs Node 20 but image has Node 18 | Use NodeSource setup script, `nvm`, or official Node.js binaries |
+> | **Go** | Binary compiled for wrong arch | Ensure `GOARCH` matches VM arch (amd64 vs arm64) |
+> | **Ruby** | App needs Ruby 3.3 but image has 3.0 | Use `rvm` or `rbenv` in `runcmd` |
+> | **Rust** | App needs recent cargo/rustc | Install via `rustup` in `runcmd` |
+
 
 ### Update a VM
 
