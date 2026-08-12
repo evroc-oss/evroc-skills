@@ -161,6 +161,14 @@ runcmd:
 > include the SSH key in that user's `ssh_authorized_keys` field within the
 > cloud-init config itself.
 
+> **Cloud-init `write_files` ordering:** The `write_files` module runs **before**
+> `users` and `runcmd`. Do **not** use it to create files in directories that are
+> created by `runcmd` (e.g., `mkdir -p /opt/app`), and do **not** set `owner` to a
+> user defined in the `users:` block because that user does not exist yet when
+> `write_files` executes. To avoid silently failed files, use `runcmd` with `tee`
+> or `cat` instead, or use `bootcmd` to create directories early and leave
+
+
 > **Runtime version compatibility:** When the user's application has runtime
 > dependencies (Java, Python, Node.js, Go, etc.), verify that the runtime version. **do NOT** assume
 > installed in the cloud-init `packages:` or `runcmd:` block is compatible with
@@ -506,6 +514,13 @@ evroc compute placementgroup delete my-pg
   Look up the app's minimum runtime version (web search if needed), confirm the correct
   package name in the OS image, and get user confirmation before writing the cloud-init
   config (see [Runtime version compatibility](#create-a-vm-with-cloud-init)).
+  - **Post-deployment cloud-init validation:** If the application port is closed
+  even though the VM is `Ready`, first check `cloud-init status` via SSH. If it
+  returns `error`, inspect `/var/log/cloud-init-output.log` for the actual failure
+  (common causes: missing parent directories for `write_files`, failed package
+  installs, or missing systemd units started in `runcmd` before they were
+  created).
+
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
