@@ -109,6 +109,13 @@ evroc compute vm get <vm-name> -o json | jq -r '.status.virtualMachineStatus'
 Do NOT grep for `status:` or `reason:` in YAML — there are multiple condition entries
 and grep matches the first one (e.g. `SecurityGroupsReady`), not the overall Ready state.
 
+> **Note on cloud-init timing:** The `Ready` and `Running` conditions indicate the VM
+> is up, but cloud-init may still be executing `runcmd` blocks (package installs,
+> downloads, service setup). These can take several minutes after the VM becomes
+> `Ready`. An application service may not be available even though the VM reports
+> `Running`. If the user expects a service to be reachable, wait and probe the
+> application port rather than relying solely on the VM's `Ready` condition.
+
 ### Create a VM with cloud-init
 
 ```bash
@@ -125,6 +132,14 @@ runcmd:
   - systemctl enable nginx
   - systemctl start nginx"
 ```
+
+> **Note on SSH users:** The evroc platform's default SSH user is `NONE` — it does
+> **not** default to `ubuntu` or `root`. The `--ssh-authorized-key` flag attaches the
+> key to the cloud-init default user (`NONE`). If your cloud-init config defines a
+> custom `users:` block, the key passed via `--ssh-authorized-key` is **not**
+> automatically attached to those custom users. To SSH as a custom user, you must
+> include the SSH key in that user's `ssh_authorized_keys` field within the
+> cloud-init config itself.
 
 ### Update a VM
 
@@ -195,6 +210,11 @@ evroc networking securitygroup addrule my-sg \
 
 > **Note:** IPv4 and IPv6 rules are separate — create one rule per protocol if you need both.
 
+> **Application ports:** In addition to SSH (22), the user's application likely needs
+> its own ingress rule for the port it listens on. Ask the user which port(s) their
+> application uses and create ingress rules for each. The default security groups only
+> cover SSH (22), HTTP (80), and HTTPS (443) — any other port requires a custom rule.
+
 ### Attach a security group to a VM
 
 ```bash
@@ -216,9 +236,13 @@ Before creating a VM, verify or create these prerequisites:
 1. **Boot disk** — create and wait for `Ready` condition (see [Disks](#disks))
 2. **Security group** — either use a default (e.g. `default-allow-ssh`) or create one with
    `evroc networking securitygroup create` + `addrule`. If the user needs SSH access,
-   ensure a rule allows TCP 22. If they need web traffic, allow 80/443.
+   ensure a rule allows TCP 22. If they need web traffic, allow 80/443. If their
+   application uses a custom port, create an ingress rule for it.
 3. **Subnet** — use the default `default-<region>-<zone>` or create one
-4. **SSH key** — confirm or ask the user for their SSH public key
+4. **SSH key** — confirm or ask the user for their SSH public key. The platform's
+   default SSH user is `NONE` — if the user needs SSH access to a custom user defined
+   in cloud-init, the key must be listed in that user's `ssh_authorized_keys` in the
+   cloud-init config, not just via `--ssh-authorized-key`
 
 ### Delete a VM
 
@@ -364,6 +388,23 @@ evroc compute placementgroup delete my-pg
   ensure `default-allow-ssh` is attached or create a custom group with a TCP 22 ingress
   rule. If the user needs web traffic, ensure 80/443 are allowed. The VM's
   `SecurityGroupsReady` condition will show `True` once groups are resolved.
+- **Application ports need ingress rules**: Default security groups only cover SSH (22),
+  HTTP (80), and HTTPS (443). If the user's application listens on a different port, you
+  must create a custom ingress rule for it before the VM can receive traffic on that port.
+- **Default SSH user is `NONE`**: The platform does not default to `ubuntu` or `root`. The
+  `--ssh-authorized-key` flag attaches the key to the cloud-init default user (`NONE`).
+  If cloud-init defines a custom `users:` block, the key is NOT attached to those users —
+  it must be listed in each user's `ssh_authorized_keys` in the cloud-init config.
+- **SSH troubleshooting — may be locked out**: If SSH fails for all users (`ubuntu`,
+  `root`, custom user), you cannot debug the VM's internal state via SSH. Alternatives:
+  check `evroc compute vm get <name> -o json` for status conditions, use cloud-init
+  `write_files` to set up monitoring scripts that run without SSH, or redeploy with a
+  corrected cloud-init config that attaches the SSH key to the intended user.
+- **cloud-init runs after `Ready`**: The VM reports `Ready` and `Running` before
+  cloud-init finishes. Package installs, downloads, and service setup in `runcmd` can
+  take several minutes after the VM is `Ready`. If the user expects a service to be
+  reachable, wait and probe the application port rather than relying on the VM's
+  `Ready` condition alone.
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
