@@ -66,10 +66,15 @@ evroc compute vm get <vm-name> -o yaml
 
 Requires: a pre-existing boot disk, a flavor, a subnet, and a zone.
 
+**Before creating the boot disk, ask the user which OS image they want.**
+Available images are listed in [`references/cli-reference.md`](references/cli-reference.md#available-disk-images)
+(e.g. `ubuntu-minimal.24-04.1`, `ubuntu.24-04.1`, `rocky.9-6.1`). Do not guess —
+present the options and confirm the user's choice.
+
 ```bash
-# 1. Create boot disk
+# 1. Create boot disk (ask user which image — see references/cli-reference.md)
 evroc compute disk create my-boot-disk \
-  --image=ubuntu-minimal.24-04.1 \
+  --image=<image-name> \
   --size-amount=50 \
   --size-unit=GB \
   --zone=a
@@ -149,11 +154,11 @@ evroc compute disk get <disk-name> -o yaml
 
 ### Create a disk
 
-From an image:
+From an image (ask the user which one — see [`references/cli-reference.md`](references/cli-reference.md#available-disk-images)):
 
 ```bash
 evroc compute disk create my-disk \
-  --image=ubuntu-minimal.24-04.1 \
+  --image=<image-name> \
   --size-amount=100 \
   --size-unit=GB \
   --zone=a
@@ -237,13 +242,11 @@ evroc compute placementgroup delete my-pg
 
 ## Pitfalls
 
-- **Disk image names**: Image names use a specific format: `<distro>.<version>.1` (dot before
-  version, hyphen within version). e.g. `ubuntu-minimal.24-04.1`, `ubuntu.24-04.1`,
-  `rocky.9-6.1`. Do NOT use `ubuntu-minimal-24.04.1` (wrong separators) — the disk will be
-  created but never become Ready (`DiskImageInvalid`). Available images:
-  `ubuntu-minimal.24-04.1` (5 GB default), `ubuntu.24-04.1` (50 GB), `ubuntu.22-04.1`,
-  `rocky.10-1.1`, `rocky.9-6.1`, `rocky.8-10.1`, `opensuse.15-6.1`, `opensuse.15-5.1`,
-  `sles.15-6.1`, `sles.15-5.1`, `sl-micro.6-1.1`. GPU VMs support Ubuntu 24.04 only.
+- **Disk images — ask, don't guess**: There is no `disk image list` CLI command. Always
+  present the available images from [`references/cli-reference.md`](references/cli-reference.md#available-disk-images)
+  and let the user choose. Image names use format `<distro>.<version>.1` (dot before version,
+  hyphen within). e.g. `ubuntu-minimal.24-04.1`, not `ubuntu-minimal-24.04.1` — wrong
+  separators silently create a disk that never becomes Ready (`DiskImageInvalid`).
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).

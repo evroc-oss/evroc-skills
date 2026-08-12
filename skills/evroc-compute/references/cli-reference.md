@@ -87,11 +87,33 @@ Aliases: create, new
 
 | Flag | Type | Description |
 |---|---|---|
-| `--image` | string | Name of the disk image. |
+| `--image` | string | Name of the disk image. See [Available Disk Images](#available-disk-images) below. |
 | `--size-amount` | int | Size of disk in the related unit. |
 | `--size-unit` | string | One of `KB`, `MB`, `GB`, `TB`. |
 | `--snapshot` | string | Name of snapshot to create from. |
 | `--zone` | string | Zone. |
+
+#### Available Disk Images
+
+The `--image` flag accepts these names only. There is no `disk image list` command — present these options to the user and let them choose.
+
+| Image Name | Distro | Version | Default Size |
+|---|---|---|---|
+| `ubuntu-minimal.24-04.1` | Minimal Ubuntu | 24.04 | 5 GB |
+| `ubuntu.24-04.1` | Ubuntu | 24.04 | 50 GB |
+| `ubuntu.22-04.1` | Ubuntu | 22.04 | 50 GB |
+| `rocky.10-1.1` | Rocky Linux | 10.1 | 50 GB |
+| `rocky.9-6.1` | Rocky Linux | 9.6 | 50 GB |
+| `rocky.8-10.1` | Rocky Linux | 8.10 | 50 GB |
+| `opensuse.15-6.1` | openSUSE | 15.6 | 50 GB |
+| `opensuse.15-5.1` | openSUSE | 15.5 | 50 GB |
+| `sles.15-6.1` | SLES | 15.6 | 50 GB |
+| `sles.15-5.1` | SLES | 15.5 | 50 GB |
+| `sl-micro.6-1.1` | SL Micro | 6.1 | 50 GB |
+
+> GPU VMs support Ubuntu 24.04 only.
+
+Image name format: `<distro>.<version>.1` (dot before version, hyphen within version). Using wrong separators (e.g. `ubuntu-minimal-24.04.1`) silently creates a disk that never becomes Ready (`DiskImageInvalid`).
 
 ### evroc compute disk list
 

@@ -32,7 +32,7 @@ tasks:
   - name: should-trigger-disk-create
     instruction: |
       Use the evroc CLI to complete this task. Run the actual commands. For any config you need, run `evroc config show` — do not read ~/.evroc/config.yaml directly.
-      I need to make an evroc boot disk from ubuntu-minimal.24-04.1.
+      I need to make an evroc boot disk from the minimal Ubuntu 24.04 image.
     graders:
       - type: deterministic
         run: python3 /Users/kspace/Developer/test-runs/evroc-skills/graders/check.py should-trigger-disk-create

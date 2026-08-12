@@ -12,7 +12,7 @@
     {
       "id": "should-trigger-disk-create",
       "type": "trigger",
-      "query": "I need to make an evroc boot disk from ubuntu-minimal.24-04.1",
+      "query": "I need to make an evroc boot disk from the minimal Ubuntu 24.04 image",
       "should_trigger": true,
       "rationale": "Disk creation on evroc"
     },
