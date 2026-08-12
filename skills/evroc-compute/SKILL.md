@@ -143,6 +143,83 @@ evroc compute vm update my-vm --running=true
 evroc compute vm update my-vm --public-ip=my-public-ip-name
 ```
 
+## Security Groups
+
+VMs require security groups for network access. Without explicitly assigned
+security groups, the VM's firewall will drop all traffic.
+
+### Default security groups
+
+Each project includes four preconfigured security groups:
+
+| Security Group | Allows |
+|---|---|
+| `default-allow-egress` | All outbound traffic (IPv4 + IPv6). VMs are auto-added unless you specify custom groups. |
+| `default-allow-intra-vpc` | All inbound + outbound traffic within the default VPC (inter-VM communication). |
+| `default-allow-web-protocols` | HTTP (TCP 80) + HTTPS (TCP 443) from any IP. |
+| `default-allow-ssh` | SSH (TCP 22) from any IP. Must be explicitly added. |
+
+### List existing security groups
+
+Before creating a new security group, check what already exists:
+
+```bash
+evroc networking securitygroup list
+```
+
+### Create a security group
+
+```bash
+evroc networking securitygroup create my-sg
+```
+
+### Add rules to a security group
+
+```bash
+# Allow SSH from anywhere (IPv4)
+evroc networking securitygroup addrule my-sg \
+  --name=allow-ssh-ipv4 \
+  --direction=Ingress \
+  --remote-ip-or-cidr=0.0.0.0/0 \
+  --port=22 \
+  --protocol=TCP
+
+# Allow HTTPS from anywhere (IPv6)
+evroc networking securitygroup addrule my-sg \
+  --name=allow-https-ipv6 \
+  --direction=Ingress \
+  --remote-ip-or-cidr=::/0 \
+  --port=443 \
+  --protocol=TCP
+```
+
+> **Note:** IPv4 and IPv6 rules are separate — create one rule per protocol if you need both.
+
+### Attach a security group to a VM
+
+```bash
+# Append (keeps existing groups)
+evroc compute vm update my-vm --append --security-group=my-sg
+
+# Replace all security groups (must specify ALL groups the VM should have)
+evroc compute vm update my-vm \
+  --security-group=default-allow-egress \
+  --security-group=my-sg
+```
+
+> **Warning:** Without `--append`, the update replaces all existing security groups. You must specify the complete list.
+
+### Pre-flight checklist before VM creation
+
+Before creating a VM, verify or create these prerequisites:
+
+1. **Boot disk** — create and wait for `Ready` condition (see [Disks](#disks))
+2. **Security group** — either use a default (e.g. `default-allow-ssh`) or create one with
+   `evroc networking securitygroup create` + `addrule`. If the user needs SSH access,
+   ensure a rule allows TCP 22. If they need web traffic, allow 80/443.
+3. **Subnet** — use the default `default-<region>-<zone>` or create one
+4. **SSH key** — confirm or ask the user for their SSH public key
+
 ### Delete a VM
 
 ```bash
@@ -281,6 +358,12 @@ evroc compute placementgroup delete my-pg
   to check readiness. For VM running state, use `.status.virtualMachineStatus`.
 - **Wait for disk Ready before VM create**: A disk that is not yet Ready will cause VM
   creation to fail with "disk is not ready". Always poll the disk's Ready condition first.
+- **Security groups — check or create before VM creation**: Without explicitly assigned
+  security groups, the VM's firewall drops all traffic. Before creating a VM, check
+  existing groups with `evroc networking securitygroup list`. If the user needs SSH access,
+  ensure `default-allow-ssh` is attached or create a custom group with a TCP 22 ingress
+  rule. If the user needs web traffic, ensure 80/443 are allowed. The VM's
+  `SecurityGroupsReady` condition will show `True` once groups are resolved.
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
