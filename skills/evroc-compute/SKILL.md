@@ -116,6 +116,26 @@ and grep matches the first one (e.g. `SecurityGroupsReady`), not the overall Rea
 > `Running`. If the user expects a service to be reachable, wait and probe the
 > application port rather than relying solely on the VM's `Ready` condition.
 
+To probe whether an application port is open and accepting connections:
+
+```bash
+# Poll the application port — redirect nc output to /dev/null so the
+# comparison variable only contains OPEN/CLOSED, not nc's stdout.
+for i in $(seq 1 30); do
+  if nc -z -w3 <ip> <port> >/dev/null 2>&1; then
+    echo "Port <port> is OPEN (attempt $i)"
+    break
+  fi
+  echo "Port <port> closed (attempt $i), waiting..."
+  sleep 10
+done
+```
+
+> **Warning:** Do NOT capture `nc` output into the comparison variable without
+> redirecting to `/dev/null`. `nc` prints "Connection to ... succeeded!" to stdout,
+> which contaminates the variable and breaks string comparisons — the loop never
+> breaks even when the port is open.
+
 ### Create a VM with cloud-init
 
 ```bash
