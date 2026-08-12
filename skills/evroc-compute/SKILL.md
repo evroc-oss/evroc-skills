@@ -161,6 +161,34 @@ runcmd:
 > include the SSH key in that user's `ssh_authorized_keys` field within the
 > cloud-init config itself.
 
+> **Runtime version compatibility:** When the user's application has runtime
+> dependencies (Java, Python, Node.js, Go, etc.), verify that the runtime version
+> installed in the cloud-init `packages:` or `runcmd:` block is compatible with
+> the application version before deploying. A version mismatch causes the service
+> to crash silently — the VM is `Ready`, the port probe shows `CLOSED`, but there's
+> no obvious error without SSH access.
+>
+> **Workflow:**
+> 1. Identify the application's runtime requirement (e.g. Java 21 for Minecraft 1.21+,
+>    Python 3.11 for a specific framework, Node 20 for an app)
+> 2. If the required version isn't obvious, web search the application's documentation
+>    for the minimum runtime version
+> 3. Confirm the package name and version available in the OS image's package manager
+>    (e.g. `openjdk-21-jre-headless` for Ubuntu 24.04, not `openjdk-17-jre-headless`)
+> 4. Present the compatibility check to the user:
+>    "Minecraft 1.21+ requires Java 21 (class file version 65). Ubuntu 24.04's
+>    `openjdk-21-jre-headless` provides Java 21 — confirm this is what you want?"
+> 5. Only proceed with the cloud-init config once the user confirms
+>
+> Common runtime version pitfalls:
+>
+> | Runtime | Issue | Fix |
+> |---|---|---|
+> | Java | App compiled with newer JDK than installed JRE | Match JRE version to app's compile target (e.g. class file 69 = Java 25, 65 = Java 21) |
+> | Python | App needs 3.11+ but image has 3.10 | Install via `deadsnakes` PPA or use `pyenv` in runcmd |
+> | Node.js | App needs Node 20 but image has Node 18 | Use NodeSource setup script in runcmd |
+> | Go | Binary compiled for wrong arch | Ensure `GOARCH` matches VM arch (amd64 vs arm64) |
+
 ### Update a VM
 
 ```bash
@@ -459,6 +487,13 @@ evroc compute placementgroup delete my-pg
   take several minutes after the VM is `Ready`. If the user expects a service to be
   reachable, wait and probe the application port rather than relying on the VM's
   `Ready` condition alone.
+- **Runtime version compatibility**: If the application has runtime dependencies (Java,
+  Python, Node.js, etc.), verify the runtime version matches the application's
+  requirements before deploying. A mismatch causes the service to crash silently — the
+  VM is `Ready` but the port stays `CLOSED` and there's no obvious error without SSH.
+  Look up the app's minimum runtime version (web search if needed), confirm the correct
+  package name in the OS image, and get user confirmation before writing the cloud-init
+  config (see [Runtime version compatibility](#create-a-vm-with-cloud-init)).
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
