@@ -241,6 +241,10 @@ evroc networking securitygroup addrule my-sg \
 > customized the port, **ask the user to confirm the exact port(s)** rather than
 > assuming the default. Present what you found and get explicit confirmation:
 > "PostgreSQL typically listens on port 5432 — is that correct for your setup?"
+>
+> If the application isn't in the table above and the user doesn't know the port,
+> use a web search to look up the application's default port(s), then confirm
+> the findings with the user before creating the rule.
 
 ### Attach a security group to a VM
 
