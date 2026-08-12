@@ -170,15 +170,17 @@ runcmd:
 >
 > **Workflow:**
 > 1. Identify the application's runtime requirement (e.g. Java 21 for an application,
->    Python 3.11 for a specific framework, Node 20 for an app) - NOTE: These are only examples. 
+   Python 3.11 for a specific framework, Node 20 for an app) - NOTE: These are only examples. 
 > 2. If the required version isn't obvious, web search the application's documentation
->    for the minimum runtime version
+   for the minimum runtime version
 > 3. Confirm the package name and version available in the OS image's package manager
->    (e.g. `openjdk-21-jre-headless` for Ubuntu 24.04, not `openjdk-17-jre-headless`)
-> 4. Present the compatibility check to the user:
->    "Minecraft 1.21+ requires Java 21 (class file version 65). Ubuntu 24.04's
->    `openjdk-21-jre-headless` provides Java 21 — confirm this is what you want?" NOTE: This is only an example question, do NOT consider this factual. 
-> 5. Only proceed with the cloud-init config once the user confirms
+   (EXAMPLE: openjdk-21-jre-headless for Ubuntu 24.04, not openjdk-17-jre-headless)
+> 4. After choosing the OS image, verify the runtime version it provides. If the package manager cannot satisfy the requirement, add a step in runcmd to install the correct runtime (e.g., Adoptium tarball, NodeSource repo, deadsnakes PPA) rather than assuming the default package works.
+> 5. Present the compatibility check to the user:
+     "[INSERT APPLICATION] requires Java 21 (class file version 65). Ubuntu 24.04's
+   openjdk-21-jre-headless provides Java 21 — confirm this is what you want?" NOTE: This is only an example question, do NOT consider this factual.
+> 6. Only proceed with the cloud-init config once the user confirms
+
 >
 > Common runtime version pitfalls:
 >
