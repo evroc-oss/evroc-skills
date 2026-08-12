@@ -91,7 +91,7 @@ evroc compute vm create my-vm \
   --running=true
 ```
 
-**Completion criterion:** `evroc compute vm get <vm-name> -o yaml | grep -E '^\s+status:'` shows `Running`.
+**Completion criterion:** `evroc compute vm get <vm-name> -o json | jq -r '.status.conditions[] | select(.type=="Ready") | .status'` returns `True` and `.status.virtualMachineStatus` is `Running`. Do NOT grep for `status:` in YAML — it matches the wrong nested field.
 
 ### Create a VM with cloud-init
 
@@ -162,6 +162,16 @@ evroc compute disk create my-disk \
   --size-amount=100 \
   --size-unit=GB \
   --zone=a
+```
+
+**Completion criterion:** Wait for the disk's `Ready` condition to be `True` before
+creating a VM from it. Poll with:
+
+```bash
+evroc compute disk get <disk-name> -o json | jq -r '.status.conditions[] | select(.type=="Ready") | .status'
+# Returns "True" when ready. Do NOT grep for "status:" in YAML output —
+# the top-level status: field and the nested condition status: field both
+# match, causing false readings.
 ```
 
 From a snapshot:
@@ -247,6 +257,14 @@ evroc compute placementgroup delete my-pg
   and let the user choose. Image names use format `<distro>.<version>.1` (dot before version,
   hyphen within). e.g. `ubuntu-minimal.24-04.1`, not `ubuntu-minimal-24.04.1` — wrong
   separators silently create a disk that never becomes Ready (`DiskImageInvalid`).
+- **Checking readiness — use JSON + jq, not YAML grep**: The `status:` key appears at both
+  the top level and nested under `conditions[]` in the YAML/JSON output. Grepping for
+  `status:` matches the wrong field and returns the condition's status (`"True"`) instead
+  of the condition's type (`"Ready"`). Always use:
+  `evroc compute <resource> get <name> -o json | jq -r '.status.conditions[] | select(.type=="Ready") | .status'`
+  to check readiness. For VM running state, use `.status.virtualMachineStatus`.
+- **Wait for disk Ready before VM create**: A disk that is not yet Ready will cause VM
+  creation to fail with "disk is not ready". Always poll the disk's Ready condition first.
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
