@@ -91,7 +91,23 @@ evroc compute vm create my-vm \
   --running=true
 ```
 
-**Completion criterion:** `evroc compute vm get <vm-name> -o json | jq -r '.status.conditions[] | select(.type=="Ready") | .status'` returns `True` and `.status.virtualMachineStatus` is `Running`. Do NOT grep for `status:` in YAML — it matches the wrong nested field.
+**Completion criterion:** The VM has a `Ready` condition with `status: "True"` **and**
+`virtualMachineStatus: "Running"`. The VM goes through several conditions before Ready
+(`SecurityGroupsReady`, `NetworkingReady`, `VMIsRunning`, `Ready`), so checking just
+`reason:` or grepping `status:` returns intermediate states like `SecurityGroupsReady`.
+
+Poll for VM readiness:
+
+```bash
+# Returns "True" when the VM is fully Ready
+evroc compute vm get <vm-name> -o json | jq -r '.status.conditions[] | select(.type=="Ready") | .status'
+
+# Returns "Running" when the VM is up
+evroc compute vm get <vm-name> -o json | jq -r '.status.virtualMachineStatus'
+```
+
+Do NOT grep for `status:` or `reason:` in YAML — there are multiple condition entries
+and grep matches the first one (e.g. `SecurityGroupsReady`), not the overall Ready state.
 
 ### Create a VM with cloud-init
 
