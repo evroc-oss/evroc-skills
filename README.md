@@ -12,6 +12,7 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 | `evroc-loadbalancer` | Manage evroc load balancers: backend pools, services, health checks, L4 routes, and listeners |
 | `evroc-iam` | Manage evroc IAM: projects, role bindings, service accounts, and credentials |
 | `evroc-think` | Manage evroc Think Models: dedicated instances, shared models, API keys, and coding agent integration |
+| `evroc-networking` | Manage evroc networking: VPCs, subnets, security groups, and public IPs |
 
 Each skill includes:
 - **Routing-optimized `description`** — clear "Use when... Do NOT use for..." triggers for agent routing
@@ -25,6 +26,27 @@ Each skill includes:
 ```
 evroc-skills/
 ├── README.md
+├── CONTRIBUTING.md
+├── .github/
+│   ├── workflows/
+│   │   └── ci.yml
+│   └── CODEOWNERS
+├── scripts/
+│   └── shared/
+│       └── check-evroc-auth.sh
+├── eval.yaml
+├── run-eval.sh
+├── graders/
+│   └── check.py
+├── fixtures/
+│   └── seed/
+├── tests/
+│   ├── README.md
+│   ├── runner.py
+│   ├── bin/
+│   │   ├── evroc          # mock CLI for skillgrade
+│   │   └── terraform
+│   └── evroc-*.json       # eval test cases
 └── skills/
     ├── evroc-compute/
     │   ├── SKILL.md
@@ -33,47 +55,11 @@ evroc-skills/
     │   └── references/
     │       └── cli-reference.md
     ├── evroc-iam/
-    │   ├── SKILL.md
-    │   ├── scripts/
-    │   │   └── check-auth.sh
-    │   └── references/
-    │       └── cli-reference.md
     ├── evroc-loadbalancer/
-    │   ├── SKILL.md
-    │   ├── scripts/
-    │   │   └── check-auth.sh
-    │   └── references/
-    │       └── cli-reference.md
+    ├── evroc-networking/
     ├── evroc-rancher/
-    │   ├── SKILL.md
-    │   ├── scripts/
-    │   │   ├── prerequisites.sh
-    │   │   ├── deploy.sh
-    │   │   ├── destroy.sh
-    │   │   ├── status.sh
-    │   │   └── check-public-ip-quota.sh
-    │   ├── assets/
-    │   │   ├── .terraform.lock.hcl
-    │   │   ├── main.tf
-    │   │   ├── variables.tf
-    │   │   ├── terraform.tfvars.example
-    │   │   ├── cloud-init-rancher.yaml
-    │   │   └── cloud-init-workload.yaml
-    │   └── references/
-    │       └── troubleshooting.md
     ├── evroc-storage/
-    │   ├── SKILL.md
-    │   ├── scripts/
-    │   │   └── check-auth.sh
-    │   └── references/
-    │       └── cli-reference.md
     └── evroc-think/
-        ├── SKILL.md
-        ├── scripts/
-        │   └── check-auth.sh
-        └── references/
-            ├── cli-reference.md
-            └── dedicated-instances.md
 ```
 
 ## Installation
