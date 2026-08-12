@@ -1,0 +1,80 @@
+{
+  "skill": "evroc-networking",
+  "description": "Manage evroc networking resources (VPCs, subnets, security groups, public IPs). Trigger on networking/VPC/subnet/security group/public IP keywords. Block on compute/IAM/storage/load balancer/Think.",
+  "cases": [
+    {
+      "id": "should-trigger-vpc-create",
+      "type": "trigger",
+      "query": "Create a new evroc VPC named my-network with CIDR block 10.0.0.0/8",
+      "should_trigger": true,
+      "rationale": "Direct VPC creation request on evroc cloud"
+    },
+    {
+      "id": "should-trigger-subnet-create",
+      "type": "trigger",
+      "query": "Create a subnet in zone a on evroc connected to my VPC",
+      "should_trigger": true,
+      "rationale": "Subnet creation on evroc networking"
+    },
+    {
+      "id": "should-trigger-security-group-rule",
+      "type": "trigger",
+      "query": "Add an ingress rule to my evroc security group to allow SSH on port 22",
+      "should_trigger": true,
+      "rationale": "Security group rule management on evroc"
+    },
+    {
+      "id": "should-trigger-public-ip",
+      "type": "trigger",
+      "query": "Create a public IP on evroc so my VM can reach the internet",
+      "should_trigger": true,
+      "rationale": "Public IP creation on evroc networking"
+    },
+    {
+      "id": "not-trigger-compute",
+      "type": "negative-trigger",
+      "query": "Create an evroc VM named web-server in zone a",
+      "should_trigger": false,
+      "correct_skill": "evroc-compute",
+      "rationale": "Compute VM provisioning, not networking"
+    },
+    {
+      "id": "not-trigger-loadbalancer",
+      "type": "negative-trigger",
+      "query": "Set up a load balancer in front of my evroc VMs",
+      "should_trigger": false,
+      "correct_skill": "evroc-loadbalancer",
+      "rationale": "Load balancer management, not networking resources"
+    },
+    {
+      "id": "instruction-subnet-naming",
+      "type": "instruction",
+      "query": "Create a subnet for zone b",
+      "expected_behavior": [
+        "Uses subnet name default-se-sto-b (not default-se-sto-a)",
+        "Matches the --zone flag with the subnet zone suffix",
+        "Requires --vpc flag — asks the user which VPC to use"
+      ]
+    },
+    {
+      "id": "instruction-sg-rule-sources",
+      "type": "instruction",
+      "query": "Add a rule to my security group allowing traffic from my other security group",
+      "expected_behavior": [
+        "Uses --security-group flag to reference the source security group",
+        "Does NOT combine --remote-ip-or-cidr with --security-group (mutually exclusive)",
+        "Uses --direction=Ingress and --protocol=All with --port=0 for all traffic"
+      ]
+    },
+    {
+      "id": "instruction-public-ip-quota",
+      "type": "instruction",
+      "query": "Create a new public IP on evroc",
+      "expected_behavior": [
+        "Lists existing public IPs first with evroc networking publicip list",
+        "Checks whether the 3-IP account quota would be exceeded",
+        "If quota is full, warns the user and suggests deleting an unused IP before creating"
+      ]
+    }
+  ]
+}
