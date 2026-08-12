@@ -211,9 +211,36 @@ evroc networking securitygroup addrule my-sg \
 > **Note:** IPv4 and IPv6 rules are separate — create one rule per protocol if you need both.
 
 > **Application ports:** In addition to SSH (22), the user's application likely needs
-> its own ingress rule for the port it listens on. Ask the user which port(s) their
-> application uses and create ingress rules for each. The default security groups only
+> its own ingress rule for the port it listens on. The default security groups only
 > cover SSH (22), HTTP (80), and HTTPS (443) — any other port requires a custom rule.
+>
+> **Port lookup workflow:** When the user mentions an application by name (e.g.
+> PostgreSQL, Redis, Minecraft, Grafana), look up its default port(s) and confirm
+> with the user before creating security group rules:
+>
+> | Common application | Default port(s) | Protocol |
+> |---|---|---|
+> | PostgreSQL | 5432 | TCP |
+> | MySQL | 3306 | TCP |
+> | Redis | 6379 | TCP |
+> | MongoDB | 27017 | TCP |
+> | Elasticsearch | 9200 | TCP |
+> | Grafana | 3000 | TCP |
+> | Prometheus | 9090 | TCP |
+> | Node.js / Express | 3000 | TCP |
+> | Django / Flask | 8000 | TCP |
+> | FastAPI | 8000 | TCP |
+> | Nginx (non-default) | 8080 | TCP |
+> | RabbitMQ | 5672 (AMQP), 15672 (mgmt) | TCP |
+> | Kafka | 9092 | TCP |
+> | MinIO | 9000, 9001 (console) | TCP |
+> | etcd | 2379 | TCP |
+> | Consul | 8500 (HTTP), 8300 (RPC) | TCP |
+>
+> This table is not exhaustive. If the application isn't listed or the user has
+> customized the port, **ask the user to confirm the exact port(s)** rather than
+> assuming the default. Present what you found and get explicit confirmation:
+> "PostgreSQL typically listens on port 5432 — is that correct for your setup?"
 
 ### Attach a security group to a VM
 
@@ -391,6 +418,9 @@ evroc compute placementgroup delete my-pg
 - **Application ports need ingress rules**: Default security groups only cover SSH (22),
   HTTP (80), and HTTPS (443). If the user's application listens on a different port, you
   must create a custom ingress rule for it before the VM can receive traffic on that port.
+  When the user mentions an application by name, look up its default port(s) (see the
+  table in [Security Groups](#security-groups)) and confirm with the user before creating
+  the rule — do not assume the default port is correct.
 - **Default SSH user is `NONE`**: The platform does not default to `ubuntu` or `root`. The
   `--ssh-authorized-key` flag attaches the key to the cloud-init default user (`NONE`).
   If cloud-init defines a custom `users:` block, the key is NOT attached to those users —
