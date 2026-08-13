@@ -1,6 +1,6 @@
 ---
 name: evroc-rancher
-description: "Use when the user wants to deploy, inspect, or destroy Rancher Manager on evroc cloud using Terraform. Covers K3s provisioning, cloud-init automation, and full lifecycle management. Do NOT trigger for bare VM creation (see evroc-compute), IAM tasks (evroc-iam), or Think model deployment (evroc-think)."
+description: "Use when the user wants to deploy, inspect, or destroy Rancher Manager on evroc cloud using Terraform. Covers K3s provisioning, cloud-init automation, and full lifecycle management. Do NOT trigger for bare VM creation (see evroc-compute), networking resources (see evroc-networking), IAM tasks (evroc-iam), or Think model deployment (evroc-think)."
 license: Apache-2.0
 compatibility: "Requires Terraform, evroc CLI authenticated with evroc login, curl, git, jq, and SSH. macOS or Linux. evroc account needs at least 2 free public IPs (3-IP quota). On first run, terraform init downloads the evroc provider binary (~20 MB) from registry.terraform.io."
 metadata:
@@ -25,8 +25,8 @@ For troubleshooting, read: [`references/troubleshooting.md`](references/troubles
 - User wants to check the status of a Rancher deployment on evroc
 - User mentions "rancher" and "evroc" together in a deployment context
 
-**Do NOT use for:** bare VM creation without Rancher, IAM tasks, storage buckets,
-or Think models.
+**Do NOT use for:** bare VM creation without Rancher, networking (public IPs,
+security groups, subnets, VPCs), IAM tasks, storage buckets, or Think models.
 
 ## Prerequisites
 
@@ -153,8 +153,9 @@ into the work directory at deploy time:
 
 - **Public IP quota**: evroc accounts have a 3-IP quota. The deployment needs
   1 IP for the Rancher server + 1 IP per workload node. Run
-  `bash scripts/check-public-ip-quota.sh <needed>` before deploying. If the user
-  hits a 403 quota error, they must free IPs with
+  `bash scripts/check-public-ip-quota.sh <needed>` before deploying (or use the
+  **evroc-networking** skill). If the user hits a 403 quota error, they must free
+  IPs via evroc-networking:
   `evroc networking publicip list` + `evroc networking publicip delete <id>`.
 - **Bootstrap time**: Rancher takes 5–10 minutes to become ready after VMs are
   provisioned. A 404 at the Rancher URL during this window is normal.

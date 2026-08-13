@@ -7,6 +7,7 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 | Skill | Description |
 |---|---|
 | `evroc-rancher` | Deploy, inspect, and destroy Rancher Manager on evroc using Terraform |
+| `evroc-networking` | Create, manage, and delete public IPs, security groups, subnets, and VPCs on evroc cloud |
 | `evroc-compute` | Manage evroc compute resources: VMs, disks, snapshots, and placement groups via the evroc CLI |
 | `evroc-storage` | Manage evroc storage: S3-compatible buckets, file stores, and bucket service accounts |
 | `evroc-loadbalancer` | Manage evroc load balancers: backend pools, services, health checks, L4 routes, and listeners |
@@ -67,13 +68,20 @@ evroc-skills/
     │   │   └── check-auth.sh
     │   └── references/
     │       └── cli-reference.md
-    └── evroc-think/
+    ├── evroc-think/
+    │   ├── SKILL.md
+    │   ├── scripts/
+    │   │   └── check-auth.sh
+    │   └── references/
+    │       ├── cli-reference.md
+    │       └── dedicated-instances.md
+    └── evroc-networking/
         ├── SKILL.md
         ├── scripts/
-        │   └── check-auth.sh
+        │   ├── check-auth.sh
+        │   └── check-public-ip-quota.sh
         └── references/
-            ├── cli-reference.md
-            └── dedicated-instances.md
+            └── cli-reference.md
 ```
 
 ## Installation

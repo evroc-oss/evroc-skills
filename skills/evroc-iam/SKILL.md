@@ -30,7 +30,7 @@ Read the full CLI reference when needed: [`references/cli-reference.md`](referen
 - User wants to retrieve an access token for API calls
 - User mentions "evroc" with "IAM", "project", "role", "permission", "service account", or "access"
 
-**Do NOT use for:** compute VMs, networking, storage buckets, load balancers, or Think models.
+**Do NOT use for:** compute VMs, networking (public IPs, security groups, subnets, VPCs), storage buckets, load balancers, or Think models.
 
 ## Prerequisites
 

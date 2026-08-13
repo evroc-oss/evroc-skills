@@ -1,6 +1,6 @@
 ---
 name: evroc-compute
-description: "Use when the user wants to create, list, inspect, update, or delete evroc VMs, disks, snapshots, or placement groups. Requires the evroc CLI. Do NOT trigger for IAM, networking, storage buckets, load balancers, or Think model operations."
+description: "Use when the user wants to create, list, inspect, update, or delete evroc VMs, disks, snapshots, or placement groups. Requires the evroc CLI. Do NOT trigger for networking, IAM, storage buckets, load balancers, or Think model operations."
 license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
@@ -25,7 +25,8 @@ Read the full CLI reference when needed: [`references/cli-reference.md`](referen
 - User wants to create placement groups for VM scheduling
 - User mentions "evroc" with "VM", "instance", "disk", "snapshot", or "compute"
 
-**Do NOT use for:** IAM, networking, storage (buckets), load balancers, or Think models.
+**Do NOT use for:** networking (public IPs, security groups, subnets, VPCs), IAM,
+storage (buckets), load balancers, or Think models.
 
 ## Prerequisites
 
@@ -42,6 +43,13 @@ evroc login
 ```
 
 ## Virtual Machines
+
+Requires: a pre-existing boot disk, a flavor, a subnet, and a zone.
+If the subnet or security group does not exist yet, create them via
+evroc-networking first.
+
+Read networking details when needed:
+[`references/networking.md`](references/networking.md) or via **evroc-networking** skill.
 
 ### List VMs
 
