@@ -538,7 +538,7 @@ evroc compute placementgroup delete my-pg
   next connection:
   ```bash
   ssh-keygen -R <vm-public-ip>
- ``
+ 
 
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
