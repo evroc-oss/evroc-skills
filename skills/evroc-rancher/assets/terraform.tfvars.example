@@ -18,7 +18,7 @@ ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... your-email@example.co
 # Admin password for the Rancher server
 # Must be at least 14 characters
 # See: https://ranchermanager.docs.rancher.com/v2.15/getting-started/installation-and-upgrade/resources/bootstrap-password
-rancher_server_admin_password = "ChangeMe-This-Is-Not-Secure!"
+rancher_server_admin_password = "<your-14+char-password>"
 
 # Shared secret for K3s cluster authentication
 # Generate with: openssl rand -base64 32

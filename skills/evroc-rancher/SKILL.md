@@ -168,3 +168,8 @@ into the work directory at deploy time:
 - **Terraform provider**: The `.terraform/` directory is NOT committed. On first
   deploy, `terraform init` downloads the evroc provider from
   `registry.terraform.io`. Requires internet access for the first run.
+- **Security groups open to 0.0.0.0/0**: The default security group opens SSH
+  (22), K8s API (6443), K3s supervisor (9345), HTTP (80), and HTTPS (443) to
+  `0.0.0.0/0`. This is intentional for quick-start evaluation but **not
+  production-safe**. For production, restrict `remote_ip` to trusted CIDRs in
+  the security group rules in `main.tf`.
