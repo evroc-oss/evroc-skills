@@ -156,58 +156,58 @@ runcmd:
   - systemctl start nginx"
 ```
 
-> **Note on SSH users:** The evroc platform's default SSH user is `NONE` — it does
-> **not** default to `ubuntu` or `root`. The `--ssh-authorized-key` flag attaches the
-> key to the cloud-init default user (`NONE`). If your cloud-init config defines a
-> custom `users:` block, the key passed via `--ssh-authorized-key` is **not**
-> automatically attached to those custom users. To SSH as a custom user, you must
-> include the SSH key in that user's `ssh_authorized_keys` field within the
-> cloud-init config itself.
+**Note on SSH users:** The evroc platform's default SSH user is `NONE` — it does
+**not** default to `ubuntu` or `root`. The `--ssh-authorized-key` flag attaches the
+key to the cloud-init default user (`NONE`). If your cloud-init config defines a
+custom `users:` block, the key passed via `--ssh-authorized-key` is **not**
+automatically attached to those custom users. To SSH as a custom user, you must
+include the SSH key in that user's `ssh_authorized_keys` field within the
+cloud-init config itself.
 
-> **Cloud-init `write_files` ordering:** The `write_files` module runs **before**
-> `users` and `runcmd`. Do **not** use it to create files in directories that are
-> created by `runcmd` (e.g., `mkdir -p /opt/app`), and do **not** set `owner` to a
-> user defined in the `users:` block because that user does not exist yet when
-> `write_files` executes. To avoid silently failed files, use `runcmd` with `tee`
-> or `cat` instead, or use `bootcmd` to create directories early and leave
+**Cloud-init `write_files` ordering:** The `write_files` module runs **before**
+`users` and `runcmd`. Do **not** use it to create files in directories that are
+created by `runcmd` (e.g., `mkdir -p /opt/app`), and do **not** set `owner` to a
+user defined in the `users:` block because that user does not exist yet when
+`write_files` executes. To avoid silently failed files, use `runcmd` with `tee`
+or `cat` instead, or use `bootcmd` to create directories early and leave
 
 
-> **Runtime version compatibility:** When the user's application has runtime
-> dependencies (Java, Python, Node.js, Go, etc.), verify that the runtime version. **do NOT** assume
-> installed in the cloud-init `packages:` or `runcmd:` block is compatible with
-> the application version before deploying. A version mismatch causes the service
-> to crash silently — the VM is `Ready`, the port probe shows `CLOSED`, but there's
-> no obvious error without SSH access.
->
-> HALT: Before running ANY evroc compute create/update command, you MUST complete the following 6 steps in order. Do NOT proceed to disk/VM creation until the user has explicitly confirmed the compatibility message in Step 4.
-> 1. Identify the application's runtime requirement (e.g. Java xx for an application,
+**Runtime version compatibility:** When the user's application has runtime
+dependencies (Java, Python, Node.js, Go, etc.), verify that the runtime version. **do NOT** assume
+installed in the cloud-init `packages:` or `runcmd:` block is compatible with
+the application version before deploying. A version mismatch causes the service
+to crash silently — the VM is `Ready`, the port probe shows `CLOSED`, but there's
+no obvious error without SSH access.
+
+
+HALT: Before running ANY evroc compute create/update command, you MUST complete the following 6 steps in order. Do NOT proceed to disk/VM creation until the user has explicitly confirmed the compatibility message in Step 4.
+
+1. Identify the application's runtime requirement (e.g. Java xx for an application,
    Python 3.11 for a specific framework, Node 20 for an app) - NOTE: These are only examples. 
-
-   
-> 2. **Web search** the application's official documentation to find the exact
->    **minimum runtime version** required for that application version. Treat
->    system knowledge as potentially stale — documentation is the source of truth
->    **You MUST cite the exact URL and the verbatim text/quote from that documentation
->    that states the runtime requirement. NEVER proceed from just memory.**
+ 
+2. **Web search** the application's official documentation to find the exact **minimum runtime version** required for that application version. Treat
+system knowledge as potentially stale — documentation is the source of truth
+**You MUST cite the exact URL and the verbatim text/quote from that documentation
+that states the runtime requirement. NEVER proceed from just memory.**
 
 
-> > 3. Once you have the runtime requirement, check the **OS image's package manager**
->    (e.g. `openjdk-21-jre-headless` for Ubuntu 24.04, `python3.11` for
->    Ubuntu 22.04, `nodejs` from NodeSource). Present the exact package name
->    (or alternative installation method if apt does not provide it) to the user.
-> 4. If the OS image's default package manager cannot satisfy the required
->    version, add a step in `runcmd` to install the correct runtime (e.g.
->    Adoptium tarball, NodeSource repo, deadsnakes PPA, `pyenv`, `rustup`,
->    language-specific version managers).
->  5. Present the compatibility check to the user in this exact format:
->       "**[INSERT APPLICATION]** requires **[INSERT RUNTIME] [VERSION]**.
->       **[INSERT OS IMAGE]** provides **[INSERT PACKAGE]** which gives
->       **[INSERT INSTALLED VERSION]** — confirm this is what you want?"
-> 6. **Only proceed with the cloud-init config once the user confirms.**
->
+3. Once you have the runtime requirement, check the **OS image's package manager**
+    (e.g. `openjdk-21-jre-headless` for Ubuntu 24.04, `python3.11` for
+    Ubuntu 22.04, `nodejs` from NodeSource). Present the exact package name
+    (or alternative installation method if apt does not provide it) to the user.
+4. If the OS image's default package manager cannot satisfy the required
+    version, add a step in `runcmd` to install the correct runtime (e.g.
+    Adoptium tarball, NodeSource repo, deadsnakes PPA, `pyenv`, `rustup`,
+    language-specific version managers).
+5. Present the compatibility check to the user in this exact format:
+       "**[INSERT APPLICATION]** requires **[INSERT RUNTIME] [VERSION]**.
+       **[INSERT OS IMAGE]** provides **[INSERT PACKAGE]** which gives
+       **[INSERT INSTALLED VERSION]** — confirm this is what you want?"
+6. **Only proceed with the cloud-init config once the user confirms.**
 
->
-> Common runtime version pitfalls:
+
+
+Common runtime version pitfalls:
 >
 > | Runtime | Issue | Fix |
 > |---|---|---|
