@@ -26,7 +26,7 @@ Read the full CLI reference when needed: [`references/cli-reference.md`](referen
 - User wants to create a bucket service account for bucket access
 - User mentions "evroc" with "bucket", "storage", "S3", "file store", or "object storage"
 
-**Do NOT use for:** compute VMs, IAM, networking, load balancers, or Think models.
+**Do NOT use for:** compute VMs, networking (public IPs, security groups, subnets, VPCs), IAM, load balancers, or Think models.
 
 ## Prerequisites
 

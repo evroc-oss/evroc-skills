@@ -1,6 +1,6 @@
 ---
 name: evroc-loadbalancer
-description: "Use when the user wants to create, configure, or delete evroc load balancers, backend pools, backend services, health checks, L4 routes, or listeners. Requires the evroc CLI and a pre-existing public IP. Do NOT trigger for compute VMs, IAM, storage buckets, or Think models."
+description: "Use when the user wants to create, configure, or delete evroc load balancers, backend pools, backend services, health checks, L4 routes, or listeners. Requires the evroc CLI and a pre-existing public IP (managed via evroc-networking). Do NOT trigger for compute VMs, IAM, storage buckets, networking resources, or Think models."
 license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux. This is a beta service — syntax may change between releases. First terraform init downloads the evroc provider from registry.terraform.io (~20 MB)."
 metadata:
@@ -25,7 +25,7 @@ Read the full CLI reference when needed: [`references/cli-reference.md`](referen
 - User wants to configure L4 routes and listeners for traffic distribution
 - User mentions "evroc" with "load balancer", "LB", "backend pool", or "health check"
 
-**Do NOT use for:** compute VMs, IAM, storage, or Think models.
+**Do NOT use for:** compute VMs, networking (public IPs, security groups, subnets, VPCs), IAM, storage, or Think models.
 
 ## Prerequisites
 
@@ -35,14 +35,14 @@ Run the auth check first:
 bash scripts/check-auth.sh
 ```
 
-A public IP and subnet must exist before creating a load balancer:
+A public IP must exist before creating a load balancer. Create it via **evroc-networking**:
 
 ```bash
-# Create a public IP first
 evroc networking publicip create my-lb-ip
 ```
 
-Note the subnet name (format: `default-<region>-<zone>`, e.g. `default-se-sto-a`).
+Note the subnet name when attaching the LB (managed via evroc-networking; defaults to
+`default-<region>-<zone>`, e.g. `default-se-sto-a`).
 
 ## Load Balancer Lifecycle
 
@@ -156,7 +156,7 @@ evroc loadbalancer backendpool delete my-pool
 
 ## Pitfalls
 
-- **Public IP required**: A load balancer requires a pre-existing public IP referenced by `--public-ip-ref`.
+- **Public IP required**: A load balancer requires a pre-existing public IP referenced by `--public-ip-ref`. Create it via **evroc-networking**.
 - **Hierarchy order**: Create bottom-up (pool → service → route → load balancer → listener). Delete top-down.
 - **Listener protocol**: Currently only `TCP` is supported for listener protocol.
 - **Health check target-port**: The `--target-port` on a health check is the port on the backend VM, not the listener port. These can differ.

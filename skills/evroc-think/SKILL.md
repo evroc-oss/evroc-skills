@@ -31,8 +31,7 @@ Read the full CLI reference when needed: [`references/cli-reference.md`](referen
   with Think as backend
 - User mentions "evroc" with "Think", "model", "inference", "GPU", "LLM", or "AI model"
 
-**Do NOT use for:** compute VMs (see evroc-compute), IAM tasks (evroc-iam),
-storage (evroc-storage), networking, or non-evroc model providers.
+**Do NOT use for:** compute VMs, networking (public IPs, security groups, subnets, VPCs), IAM, storage, load balancers, or non-evroc model providers.
 
 ## Prerequisites
 
