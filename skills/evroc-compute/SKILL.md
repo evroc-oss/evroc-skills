@@ -176,12 +176,18 @@ runcmd:
 > to crash silently — the VM is `Ready`, the port probe shows `CLOSED`, but there's
 > no obvious error without SSH access.
 >
-> **Mandatory Workflow:**
+> HALT: Before running ANY evroc compute create/update command, you MUST complete the following 6 steps in order. Do NOT proceed to disk/VM creation until the user has explicitly confirmed the compatibility message in Step 4.
 > 1. Identify the application's runtime requirement (e.g. Java xx for an application,
    Python 3.11 for a specific framework, Node 20 for an app) - NOTE: These are only examples. 
+
+   
 > 2. **Web search** the application's official documentation to find the exact
 >    **minimum runtime version** required for that application version. Treat
 >    system knowledge as potentially stale — documentation is the source of truth
+>    **You MUST cite the exact URL and the verbatim text/quote from that documentation
+>    that states the runtime requirement. NEVER proceed from just memory.**
+
+
 > > 3. Once you have the runtime requirement, check the **OS image's package manager**
 >    (e.g. `openjdk-21-jre-headless` for Ubuntu 24.04, `python3.11` for
 >    Ubuntu 22.04, `nodejs` from NodeSource). Present the exact package name
