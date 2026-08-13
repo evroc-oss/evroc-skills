@@ -13,7 +13,6 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 | `evroc-loadbalancer` | Manage evroc load balancers: backend pools, services, health checks, L4 routes, and listeners |
 | `evroc-iam` | Manage evroc IAM: projects, role bindings, service accounts, and credentials |
 | `evroc-think` | Manage evroc Think Models: dedicated instances, shared models, API keys, and coding agent integration |
-| `evroc-blog-writing` | Write, edit, and review evroc blog posts with brand voice enforcement, banned language filtering, and SEO validation |
 
 Each skill includes:
 - **Routing-optimized `description`** — clear "Use when... Do NOT use for..." triggers for agent routing
@@ -76,10 +75,6 @@ evroc-skills/
     │   └── references/
     │       ├── cli-reference.md
     │       └── dedicated-instances.md
-    ├── evroc-blog-writing/
-    │   ├── SKILL.md
-    │   └── references/
-    │       └── seo-validation.md
     └── evroc-networking/
         ├── SKILL.md
         ├── scripts/
