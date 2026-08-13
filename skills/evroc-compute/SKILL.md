@@ -530,6 +530,16 @@ evroc compute placementgroup delete my-pg
   installs, or missing systemd units started in `runcmd` before they were
   created).
 
+  - **SSH host key change warning**: Every new evroc VM generates a fresh SSH host
+  key pair. If the assigned public IP was previously used for a different VM, your
+  local `~/.ssh/known_hosts` will contain the old key and SSH will refuse to
+  connect with a `REMOTE HOST IDENTIFICATION HAS CHANGED` error. This is normal,
+  not a man-in-the-middle attack. Fix it by removing the stale entry before the
+  next connection:
+  ```bash
+  ssh-keygen -R <vm-public-ip>
+ ``
+
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
