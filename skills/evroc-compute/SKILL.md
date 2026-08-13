@@ -98,13 +98,16 @@ evroc compute vm create my-vm \
 
 Poll for VM readiness:
 
-```bash
-# Returns "True" when the VM is fully Ready
-evroc compute vm get <vm-name> -o json | jq -r '.status.conditions[] | select(.type=="Ready") | .status'
+- Checking readiness — prefer Python, with jq only as last resort: The status: key appears at both the top level and nested under conditions[] in the YAML/JSON output. Grepping for status: matches the wrong field and returns the condition's status ("True") instead of the condition's type ("Ready"). Prefer a robust parser — try Python first, and fall back to jq only when you know the JSON does not contain unescaped control characters:
+# Preferred — Python using YAML output (avoids unescaped JSON control chars)
+evroc compute vm get <vm-name> -o yaml | python3 -c "import sys, yaml; d=yaml.safe_load(sys.stdin); print([c['status'] for c in d['status']['conditions'] if c['type']=='Ready'][0])"
 
-# Returns "Running" when the VM is up
-evroc compute vm get <vm-name> -o json | jq -r '.status.virtualMachineStatus'
-```
+# Alternative — jq when JSON is clean
+evroc compute vm get <vm-name> -o json | jq -r '.status.conditions[] | select(.type=="Ready") | .status'
+For VM running state, use .status.virtualMachineStatus.
+Why Python first? The evroc output can contain unescaped control characters inside string fields such as cloudInitUserData; these make the JSON technically invalid and break jq with:
+jq: parse error: Invalid string: control characters from U+0000 through U+001F must be escaped.
+YAML mode plus python3 + pyyaml handles this gracefully.
 
 Do NOT grep for `status:` or `reason:` in YAML — there are multiple condition entries
 and grep matches the first one (e.g. `SecurityGroupsReady`), not the overall Ready state.
