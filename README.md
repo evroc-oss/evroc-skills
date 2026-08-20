@@ -1,6 +1,7 @@
 <div align="center">
   <img src="docs/images/evroc-logo.png" alt="evroc" width="300"/>
 </div>
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # evroc-skills
