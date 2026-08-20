@@ -1,3 +1,8 @@
+<div align="center">
+  <img src="docs/images/evroc-logo.png" alt="evroc" width="300"/>
+</div>
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 # evroc-skills
 
 Agent skills for working with evroc cloud infrastructure. Each skill follows the [Agent Skills specification](https://agentskills.io/specification).
@@ -5,7 +10,7 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 ## Skills
 
 | Skill | Description |
-|---|---|
+| --- | --- |
 | `evroc-rancher` | Deploy, inspect, and destroy Rancher Manager on evroc using Terraform |
 | `evroc-networking` | Create, manage, and delete public IPs, security groups, subnets, and VPCs on evroc cloud |
 | `evroc-compute` | Manage evroc compute resources: VMs, disks, snapshots, and placement groups via the evroc CLI |
@@ -15,11 +20,12 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 | `evroc-think` | Manage evroc Think Models: dedicated instances, shared models, API keys, and coding agent integration |
 
 Each skill includes:
+
 - **Routing-optimized `description`** — clear "Use when... Do NOT use for..." triggers for agent routing
 - **`Pitfalls` section** — highest-value content per the Perplexity "Zen of Skills"
 - **Verifiable completion criteria** — exact commands to confirm success
-- **`references/`** — CLI flag references and domain-specific guides (progressive disclosure)
-- **`scripts/`** — deterministic helper scripts for fragile operations and auth checks
+- **`references/`** — CLI flag references and domain-specific guides.
+- **`scripts/`** — deterministic helper scripts for fragile operations and auth checks. 
 
 ## Repository Structure
 
