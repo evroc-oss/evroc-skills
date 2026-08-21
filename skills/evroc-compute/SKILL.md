@@ -165,13 +165,21 @@ runcmd:
   - systemctl start nginx"
 ```
 
-**Note on SSH users:** The evroc platform's default SSH user is `NONE` — it does
-**not** default to `ubuntu` or `root`. The `--ssh-authorized-key` flag attaches the
-key to the cloud-init default user (`NONE`). If your cloud-init config defines a
-custom `users:` block, the key passed via `--ssh-authorized-key` is **not**
-automatically attached to those custom users. To SSH as a custom user, you must
-include the SSH key in that user's `ssh_authorized_keys` field within the
-cloud-init config itself.
+**SSH users and cloud-init interaction:**
+
+If you do not provide custom cloudInit userdata, the platform creates an
+`evroc-user` for you and attaches the `--ssh-authorized-key` to it.
+
+When you provide custom cloudInit with a `users:` block, `evroc-user`
+is **NOT** created automatically, and the `--ssh-authorized-key` passed
+via CLI or API is **NOT** automatically attached to your custom users.
+
+To get SSH access with custom users, you must include the SSH key in
+that user's `ssh_authorized_keys` field within the cloudInit config
+itself.
+
+**Alternative:** omit the `users:` block from your cloudInit, let the
+platform create `evroc-user`, and SSH as that user.
 
 **Cloud-init `write_files` ordering:** The `write_files` module runs **before**
 `users` and `runcmd`. Do **not** use it to create files in directories that are
@@ -355,10 +363,11 @@ Before creating a VM, verify or create these prerequisites:
    ensure a rule allows TCP 22. If they need web traffic, allow 80/443. If their
    application uses a custom port, create an ingress rule for it.
 3. **Subnet** — use the default `default-<region>-<zone>` or create one
-4. **SSH key** — confirm or ask the user for their SSH public key. The platform's
-   default SSH user is `NONE` — if the user needs SSH access to a custom user defined
-   in cloud-init, the key must be listed in that user's `ssh_authorized_keys` in the
-   cloud-init config, not just via `--ssh-authorized-key`
+4. **SSH key** — confirm or ask the user for their SSH public key. Without custom
+   cloudInit, the platform creates `evroc-user` and attaches the key. With custom
+   cloudInit containing a `users:` block, `evroc-user` is not created and the key
+   is not automatically attached — the user must embed the key in the cloudInit
+   `ssh_authorized_keys` field for the intended user.
 
 ### Delete a VM
 
@@ -517,13 +526,14 @@ evroc compute placementgroup delete my-pg
   When the user mentions an application by name, look up its default port(s) (see the
   table in [Security Groups](#security-groups)) and confirm with the user before creating
   the rule — do not assume the default port is correct.
-- **Default SSH user is `NONE`**: The platform does not default to `ubuntu` or `root`. The
-  `--ssh-authorized-key` flag attaches the key to the cloud-init default user (`NONE`).
-  If cloud-init defines a custom `users:` block, the key is NOT attached to those users —
-  it must be listed in each user's `ssh_authorized_keys` in the cloud-init config.
-- **SSH troubleshooting — may be locked out**: If SSH fails for all users (`ubuntu`,
-  `root`, custom user), you cannot debug the VM's internal state via SSH. Alternatives:
-  check `evroc compute vm get <name> -o json` for status conditions, use cloud-init
+- **`evroc-user` and custom cloud-init**: When you do not provide custom
+  cloudInit userdata, the platform creates `evroc-user` and `--ssh-authorized-key`
+  attaches to it. When you provide custom cloudInit with a `users:` block,
+  `evroc-user` is NOT created, and the key is NOT automatically attached to your
+  custom users. Embed the key in each custom user's `ssh_authorized_keys` in the
+  cloud-init config, or omit the `users:` block to keep the default `evroc-user`.
+- **SSH troubleshooting — may be locked out**: If SSH fails, check VM status with
+  `evroc compute vm get <name> -o json`. If you are locked out, use cloud-init
   `write_files` to set up monitoring scripts that run without SSH, or redeploy with a
   corrected cloud-init config that attaches the SSH key to the intended user.
 - **cloud-init runs after `Ready`**: The VM reports `Ready` and `Running` before
