@@ -485,9 +485,16 @@ evroc compute placementgroup delete my-pg
 
 ## Pitfalls
 
-- **Disk images — ask, don't guess**: There is no `disk image list` CLI command. Always
-  present the available images from [`references/cli-reference.md`](references/cli-reference.md#available-disk-images)
-  and let the user choose. Image names use format `<distro>.<version>.1` (dot before version,
+- **Disk images — ask, don't guess**: There is no `disk image list` CLI command.
+  For the live, current list, run:
+  ```bash
+  bash scripts/get-disk-images.sh
+  ```
+  This fetches from the API using your current `evroc login` token. The
+  [`references/cli-reference.md`](references/cli-reference.md#available-disk-images)
+  table is a cache — use it for offline reference or quick browsing only.
+  Always have the user confirm their choice from the live list or cache.
+  Image names use format `<distro>.<version>.1` (dot before version,
   hyphen within). e.g. `ubuntu-minimal.24-04.1`, not `ubuntu-minimal-24.04.1` — wrong
   separators silently create a disk that never becomes Ready (`DiskImageInvalid`).
 - **Checking readiness — use JSON + jq, not YAML grep**: The `status:` key appears at both
