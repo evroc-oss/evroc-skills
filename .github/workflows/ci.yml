@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate skill schemas and test cases
+        run: python3 tests/runner.py validate
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run shellcheck on scripts
+        uses: ludeeus/action-shellcheck@master
+        with:
+          severity: warning
+          paths: |
+            skills/*/scripts/*.sh
+
+  terraform-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.x"
+
+      - name: Validate Terraform assets
+        working-directory: skills/evroc-rancher/assets
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+  eval:
+    runs-on: ubuntu-latest
+    # Full LLM-based evals — only on PRs with a Think API key
+    if: ${{ github.event_name == 'pull_request' && vars.EVROC_THINK_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run trigger routing evals
+        env:
+          EVROC_THINK_API_KEY: ${{ secrets.EVROC_THINK_API_KEY }}
+        run: |
+          python3 tests/runner.py eval \
+            --backend think \
+            --model "nvidia/Llama-3.3-70B-Instruct-FP8" \
+            --types trigger,negative-trigger
