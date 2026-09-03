@@ -23,7 +23,6 @@ Agent skills for working with evroc cloud infrastructure. Each skill follows the
 Each skill includes:
 
 - **Routing-optimized `description`** — clear "Use when... Do NOT use for..." triggers for agent routing
-- **`Pitfalls` section** — highest-value content per the Perplexity "Zen of Skills"
 - **Verifiable completion criteria** — exact commands to confirm success
 - **`references/`** — CLI flag references and domain-specific guides.
 - **`scripts/`** — deterministic helper scripts for fragile operations and auth checks. 
