@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-TOKEN=$(evroc iam get-access-token --format=json 2>/dev/null | jq -r '.token // empty')
+TOKEN=$(evroc iam get-access-token 2>/dev/null)
 
 if [[ -z "$TOKEN" ]]; then
     echo "Error: Failed to get access token." >&2
