@@ -30,7 +30,13 @@ storage (buckets), load balancers, or Think models.
 
 ## Prerequisites
 
-Run the auth check first:
+Ensure the evroc CLI is installed:
+
+```bash
+bash scripts/check-cli.sh
+```
+
+Then authenticate:
 
 ```bash
 bash scripts/check-auth.sh
