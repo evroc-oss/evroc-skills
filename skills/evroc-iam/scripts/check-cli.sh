@@ -17,7 +17,7 @@ DOWNLOAD_BASE="https://downloads.cloud.evroc.com/evroc-cli/latest"
 
 # --- Check if already in PATH ---
 if command -v "${BIN_NAME}" >/dev/null 2>&1; then
-    if "${BIN_NAME}" --version >/dev/null 2>&1; then
+    if "${BIN_NAME}" version >/dev/null 2>&1; then
         echo "${BIN_NAME} CLI already installed: $(command -v "${BIN_NAME}")" >&2
         exit 0
     fi
@@ -90,11 +90,11 @@ if [[ ":${PATH}:" != *":${INSTALL_DIR}:"* ]]; then
 fi
 
 # --- Verify ---
-if ! "${INSTALL_PATH}" --version >/dev/null 2>&1; then
+if ! "${INSTALL_PATH}" version >/dev/null 2>&1; then
     echo "Error: Installed binary does not run. Path: ${INSTALL_PATH}" >&2
     exit 1
 fi
 
 echo "${BIN_NAME} CLI installed to ${INSTALL_PATH}" >&2
-"${INSTALL_PATH}" --version >&2
+"${INSTALL_PATH}" version >&2
 exit 0
