@@ -135,7 +135,7 @@ evroc networking securitygroup addrule my-sg \
   --direction=Ingress \
   --protocol=TCP \
   --port=22 \
-  --remote-ip=0.0.0.0/0
+  --remote-ip-or-cidr=0.0.0.0/0
 
 # IPv6 rule
 evroc networking securitygroup addrule my-sg \
@@ -143,7 +143,7 @@ evroc networking securitygroup addrule my-sg \
   --direction=Ingress \
   --protocol=TCP \
   --port=22 \
-  --remote-ip=::/0
+  --remote-ip-or-cidr=::/0
 ```
 
 ### Remove a rule
