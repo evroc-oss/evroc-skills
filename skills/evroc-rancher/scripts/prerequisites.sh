@@ -20,10 +20,16 @@ else
 fi
 
 # --- 2. evroc CLI ---
-if command -v evroc &>/dev/null; then
-    echo "✓ evroc CLI found: $(evroc version 2>/dev/null || echo 'unknown')"
+# Auto-install via check-cli.sh if evroc is missing.
+# Ensure PATH includes ~/.local/bin for this session.
+if [[ -d "${HOME}/.local/bin" && ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
+    export PATH="${HOME}/.local/bin:${PATH}"
+fi
+
+if bash scripts/check-cli.sh 2>&1; then
+    echo "✓ evroc CLI verified"
 else
-    echo "✗ evroc CLI not found. Install from: https://docs.evroc.com/"
+    echo "✗ evroc CLI not found and installation failed"
     ERR=1
 fi
 
