@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-USED=$(evroc networking publicip list -o json 2>/dev/null | jq 'length')
+USED=$(evroc networking publicip list -o json 2>/dev/null | jq '.items | length')
 AVAILABLE=$((3 - USED))
 
 echo "Public IP quota: ${USED}/3 used, ${AVAILABLE} available"

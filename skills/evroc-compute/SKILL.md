@@ -192,7 +192,8 @@ platform create `evroc-user`, and SSH as that user.
 created by `runcmd` (e.g., `mkdir -p /opt/app`), and do **not** set `owner` to a
 user defined in the `users:` block because that user does not exist yet when
 `write_files` executes. To avoid silently failed files, use `runcmd` with `tee`
-or `cat` instead, or use `bootcmd` to create directories early and leave
+or `cat` instead, or use `bootcmd` to create directories early and
+let `write_files` create files in those directories.
 
 
 **Runtime version compatibility:** When the user's application has runtime
@@ -378,7 +379,7 @@ Before creating a VM, verify or create these prerequisites:
 ### Delete a VM
 
 ```bash
-evroc compute vm delete my-vm -f
+evroc compute vm delete my-vm --force
 ```
 
 **Completion criterion:** `evroc compute vm get <vm-name>` returns `not found`.
@@ -433,10 +434,35 @@ evroc compute disk create my-disk \
 ### Delete a disk
 
 ```bash
-evroc compute disk delete <disk-name> -f
+evroc compute disk delete <disk-name> --force
 ```
 
 **Completion criterion:** `evroc compute disk get <disk-name>` returns `not found`.
+
+## Hotswap Disk Attachments
+
+Hotswap disk attachments allow attaching a disk to a running VM without rebooting.
+See [`references/cli-reference.md`](references/cli-reference.md#hotswap-disk-attachments) for full flag details.
+
+### Create a hotswap disk attachment
+
+```bash
+evroc compute hotswapdiskattachment create my-hda \
+  --disk-ref=my-disk \
+  --vm-ref=my-vm
+```
+
+### List hotswap disk attachments
+
+```bash
+evroc compute hotswapdiskattachment list
+```
+
+### Delete a hotswap disk attachment
+
+```bash
+evroc compute hotswapdiskattachment delete my-hda --force
+```
 
 ## Snapshots
 
@@ -461,7 +487,7 @@ evroc compute snapshot get <snapshot-name> -o yaml
 ### Delete a snapshot
 
 ```bash
-evroc compute snapshot delete <snapshot-name> -f
+evroc compute snapshot delete <snapshot-name> --force
 ```
 
 ## Placement Groups
@@ -495,7 +521,7 @@ evroc compute vm create my-vm \
 ### Delete a placement group
 
 ```bash
-evroc compute placementgroup delete my-pg
+evroc compute placementgroup delete my-pg --force
 ```
 
 ## Pitfalls
@@ -583,6 +609,9 @@ evroc compute placementgroup delete my-pg
 - **Output formats**: `-o yaml` (default for `get`), `-o json`, `-o list` (default for `list`,
   shows names only). Use `yaml` or `json` when you need full resource details.
 - **Label selectors**: Kubernetes-style syntax: `key=value`, `key in (val1,val2)`, `!key`.
-  Works with user labels and system labels.
+  Works with user labels and system labels. Add or remove labels with the `label`
+  subcommand (see [`references/cli-reference.md`](references/cli-reference.md)):
+  `evroc compute vm label <name> --add key=value`, `evroc compute disk label <name> --remove key`.
+  Works on VMs, disks, snapshots, and placement groups.
 - **Name rules**: Max 63 chars, lowercase alphanumeric with hyphens, starting/ending
   alphanumeric.

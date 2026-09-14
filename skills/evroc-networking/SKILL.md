@@ -91,7 +91,7 @@ with an assigned address.
 ### Delete a public IP
 
 ```bash
-evroc networking publicip delete <ip-name> -f
+evroc networking publicip delete <ip-name> --force
 ```
 
 **Completion criterion:** `evroc networking publicip get <ip-name>` returns
@@ -119,8 +119,12 @@ evroc networking securitygroup get <sg-name> -o yaml
 ### Create a security group
 
 ```bash
-evroc networking securitygroup create my-sg
+evroc networking securitygroup create my-sg \
+  --vpc=default-se-sto
 ```
+
+**Flags:**
+- `--vpc <vpc-name>`: VPC the security group belongs to (e.g. `default-se-sto`).
 
 **Completion criterion:** `evroc networking securitygroup get my-sg` returns the group.
 
@@ -146,6 +150,12 @@ evroc networking securitygroup addrule my-sg \
   --remote-ip-or-cidr=::/0
 ```
 
+**Flags:**
+- `--port <int>`: Single port for the rule (used as both start and end port).
+- `--end-port <int>`: End of a port range; use with `--port` (as start) to open a range (e.g. `--port=8000 --end-port=8100`).
+- `--security-group <sg-name>`: Target security group by name (alternative to passing it as a positional argument).
+- `--subnet <subnet-name>`: Restrict the rule to traffic from a specific subnet instead of a CIDR.
+
 ### Remove a rule
 
 ```bash
@@ -156,7 +166,7 @@ evroc networking securitygroup removerule my-sg \
 ### Delete a security group
 
 ```bash
-evroc networking securitygroup delete <sg-name> -f
+evroc networking securitygroup delete <sg-name> --force
 ```
 
 **Completion criterion:** `evroc networking securitygroup get <sg-name>` returns
@@ -184,44 +194,23 @@ evroc networking subnet get <subnet-name> -o yaml
 ### Create a subnet
 
 ```bash
-# IPv4 subnet
-evroc networking subnet create my-subnet-v4 \
-  --zone=a \
-  --cidr=10.0.1.0/24
-```
-
-**IPv6 example side-by-side:**
-- **IPv4:** `--cidr=10.0.1.0/24` (RFC1918 private range, 256 addresses)  
-- **IPv6:** `--cidr=fd00:10:1::/64` (ULA range, 18 quintillion addresses)
-
-```bash
-# IPv4 subnet
-evroc networking subnet create my-subnet-v4 \
-  --zone=a \
-  --cidr=10.0.1.0/24
-
-# IPv6 subnet
-evroc networking subnet create my-subnet-v6 \
-  --zone=a \
-  --cidr=fd00:10:1::/64
-```
-
-### Create a dual-stack subnet
-
-For a subnet that supports both IPv4 (for legacy reachability) and IPv6
-(end-to-end connectivity), assign both CIDRs:
-
-```bash
+# Dual-stack subnet (IPv4 + IPv6)
 evroc networking subnet create my-subnet-dual \
   --zone=a \
-  --cidr=10.0.1.0/24 \
-  --cidr-v6=fd00:10:1::/64
+  --ipv4-cidr-block=10.0.1.0/24 \
+  --stack-type=dual-stack \
+  --vpc=default-se-sto
 ```
+
+**CIDR notes:**
+- **IPv4:** `--ipv4-cidr-block=10.0.1.0/24` (RFC1918 private range, 256 addresses)
+- **IPv6:** IPv6 addressing is automatic in dual-stack mode; no separate IPv6 CIDR flag is needed.
+- **VPC:** `--vpc=default-se-sto` attaches the subnet to the default VPC for the `se-sto` region.
 
 ### Delete a subnet
 
 ```bash
-evroc networking subnet delete <subnet-name> -f
+evroc networking subnet delete <subnet-name> --force
 ```
 
 **Completion criterion:** `evroc networking subnet get <subnet-name>` returns
@@ -249,39 +238,20 @@ evroc networking vpc get <vpc-name> -o yaml
 ### Create a VPC
 
 ```bash
-# IPv4 VPC
-evroc networking vpc create my-vpc-v4 \
-  --cidr=10.0.0.0/16
-```
-
-**IPv6 example side-by-side:**
-- **IPv4:** `--cidr=10.0.0.0/16` (RFC1918, ~65k addresses across all subnets)  
-- **IPv6:** `--cidr=fd00:10::/56` (ULA, /64 per subnet, auto-assigned to VMs)
-
-```bash
-# IPv4 VPC
-evroc networking vpc create my-vpc-v4 \
-  --cidr=10.0.0.0/16
-
-# IPv6 VPC
-evroc networking vpc create my-vpc-v6 \
-  --cidr=fd00:10::/56
-```
-
-### Create a dual-stack VPC
-
-For a VPC that supports both IP families, provide both CIDRs at creation:
-
-```bash
+# Dual-stack VPC (IPv4 + IPv6)
 evroc networking vpc create my-vpc-dual \
-  --cidr=10.0.0.0/16 \
-  --cidr-v6=fd00:10::/56
+  --ipv4-cidr-block=10.0.0.0/16 \
+  --stack-type=dual-stack
 ```
+
+**CIDR notes:**
+- **IPv4:** `--ipv4-cidr-block=10.0.0.0/16` (RFC1918, ~65k addresses across all subnets)
+- **IPv6:** IPv6 addressing is automatic in dual-stack mode; no separate IPv6 CIDR flag is needed.
 
 ### Delete a VPC
 
 ```bash
-evroc networking vpc delete <vpc-name> -f
+evroc networking vpc delete <vpc-name> --force
 ```
 
 **Completion criterion:** `evroc networking vpc get <vpc-name>` returns `not found`.
@@ -314,14 +284,19 @@ public address automatically without quota tracking.
 - **IPv4 quota**: evroc accounts have a 3-address elastic IPv4 quota. IPv6 has no per-address quota. Run
   `evroc networking publicip list` to check IPv4 usage. Free unused IPv4 addresses before
   creating new ones.
-- **IPv6 security groups require ICMPv6**: In dual-stack or IPv6-only subnets, security group rules
-  must explicitly allow ICMPv6 traffic. IPv6 Neighbor Discovery (N/D), Router Solicitation (RS),
-  and Router Advertisement (RA) all use ICMPv6. Blocking these prevents address configuration and
-  basic Layer 3 reachability. Add a rule for `ICMPv6` on both Ingress and Egress directions.
+- **IPv6 security groups require ICMP**: In dual-stack or IPv6-only subnets, security group rules
+  must explicitly allow ICMP traffic. The CLI `--protocol ICMP` value covers both ICMPv4 and
+  ICMPv6 depending on the CIDR family. IPv6 Neighbor Discovery (N/D), Router Solicitation (RS),
+  and Router Advertisement (RA) all use ICMPv6. Blocking this prevents address configuration and
+  basic Layer 3 reachability. Add a rule for `ICMP` on both Ingress and Egress directions.
 - **Delete order**: Delete VMs and load balancers before deleting the security
   groups, public IPs, and subnets they reference. Resources with active references
   cannot be deleted.
 - **Name rules**: Max 63 chars, lowercase alphanumeric with hyphens, starting/ending
   alphanumeric.
-- **CLI aliases**: `sg` for `securitygroup`, `lb` for `loadbalancer`, `ls` for `list`,
+- **Labeling**: All networking resources (public IPs, security groups, subnets, VPCs)
+  support the `label` subcommand for adding/removing labels:
+  `evroc networking <resource> label <name> --add key=value --remove key`.
+  See [`references/cli-reference.md`](references/cli-reference.md) for details.
+- **CLI aliases**: `sg` for `securitygroup`, `vpc` for `virtualprivatecloud`, `ls` for `list`,
   `rm`/`del` for `delete`, `new` for `create`.

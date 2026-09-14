@@ -89,11 +89,25 @@ evroc storage bucket update <name> [flags]
 Aliases: update, u
 ```
 
+| Flag | Type | Description |
+|---|---|---|
+| `--default-object-lock-duration-days` | int | Days to retain locked objects (default: 1). Requires `--object-retention-mode=Locking`. |
+| `--default-object-lock-mode` | string | Lock mode: `Soft` or `Immutable` (default: `Soft`). Requires `--object-retention-mode=Locking`. |
+| `--lifecycle-policy` | string | Lifecycle policy in JSON. Use `file://` prefix to load from file. |
+| `--object-retention-mode` | string | Retention mode: `Disabled`, `Suspended`, `Versioned`, `Locking` (default: `Disabled`). |
+
 ### evroc storage bucket label
+
+Add or remove labels on a bucket.
 
 ```
 evroc storage bucket label <name> [flags]
 ```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
 
 ## File Stores
 
@@ -141,6 +155,19 @@ Aliases: delete, del, rm
 |---|---|---|
 | `--force` | bool | Skip interactive prompts. |
 
+### evroc storage filestore label
+
+Add or remove labels on a file store.
+
+```
+evroc storage filestore label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
+
 ## Bucket Service Accounts
 
 ### evroc storage bucketserviceaccount create
@@ -183,6 +210,10 @@ evroc storage bucketserviceaccount delete <name> [flags]
 Aliases: delete, del, rm
 ```
 
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
 ### evroc storage bucketserviceaccount update
 
 ```
@@ -190,11 +221,34 @@ evroc storage bucketserviceaccount update <name> [flags]
 Aliases: update, u
 ```
 
+| Flag | Type | Description |
+|---|---|---|
+| `--bucket` | strings | Bucket references to associate with the service account. |
+
+### evroc storage bucketserviceaccount label
+
+Add or remove labels on a bucket service account.
+
+```
+evroc storage bucketserviceaccount label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
+
 ## Bucket Service Account Secrets
 
 ### evroc storage bucketserviceaccountsecret
 
-Manages secrets for bucket service accounts. Subcommands: `create`, `delete`, `get`, `label`, `list`, `update`.
+Manages secrets for bucket service accounts. Subcommand: `get`.
+
+### evroc storage bucketserviceaccountsecret get
+
+```
+evroc storage bucketserviceaccountsecret get <name> [flags]
+```
 
 ## Object Retention Modes
 

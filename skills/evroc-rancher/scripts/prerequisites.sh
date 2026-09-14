@@ -39,7 +39,7 @@ if [[ -f ~/.evroc/config.yaml ]]; then
     PROJECT=$(evroc config current-project 2>/dev/null || true)
     if [[ -z "${PROJECT:-}" ]]; then
         echo "⚠ No project set. Attempting auto-detection..."
-        PROJECT=$(evroc iam project list -o json 2>/dev/null | jq -r '.[0].projectId // empty')
+        PROJECT=$(evroc iam project list -o json 2>/dev/null | jq -r '.items[0].metadata.id // empty')
         if [[ -n "${PROJECT:-}" ]]; then
             echo "  Auto-selected project: ${PROJECT}"
             evroc config set-project "${PROJECT}"

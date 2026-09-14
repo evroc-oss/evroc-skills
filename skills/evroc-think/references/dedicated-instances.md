@@ -23,14 +23,14 @@ Complete guide for managing dedicated Think model instances (isolated GPU resour
 
 ## Model Selection
 
-Models use HuggingFace handles:
+Models use dashed IDs (from `evroc think model list`):
 
 ```bash
 # Filter by name
-evroc think model list | grep "mistral"
+evroc think model list | grep "gpt-oss"
 
 # Full details (context length, supported profiles, etc.)
-evroc think model get mistralai/Ministral-8B-Instruct-2410 -o yaml
+evroc think model get openai-gpt-oss-120b -o yaml
 ```
 
 ## Size Selection
@@ -85,7 +85,7 @@ evroc think instance get my-instance -o yaml
 Common causes:
 - Model image still downloading (normal for large models, can take 5–15 min)
 - GPU type temporarily unavailable in the zone
-- Model ID mistyped (check `evroc think model list` for exact handle)
+- Model ID mistyped (check `evroc think model list` for exact ID)
 
 ### Instance in `Error` state
 
