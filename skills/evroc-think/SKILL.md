@@ -102,11 +102,11 @@ Sizes encode GPU type + resources, e.g. `1-b200-27c-240g` (1× B200, 27 vCPUs, 2
 
 ```bash
 evroc think instance create my-instance \
-  --model mistralai/Ministral-8B-Instruct-2410 \
+  --model openai-gpt-oss-120b \
   --size 1-b200-27c-240g
 ```
 
-- `--model` — Required. HuggingFace model handle.
+- `--model` — Required. Model ID from `evroc think model list` (dashed format).
 - `--size` — Required. Instance size ID from `evroc think size list`.
 - `--stopped` — Create in stopped state (default: running).
 
@@ -140,7 +140,7 @@ evroc think instance update my-instance --model <new-model-id>
 ### Delete an instance
 
 ```bash
-evroc think instance delete my-instance -f
+evroc think instance delete my-instance --force
 ```
 
 **Completion criterion:** `evroc think instance get my-instance` returns `not found`.
@@ -168,7 +168,7 @@ evroc think apikey list
 ### Delete an API key
 
 ```bash
-evroc think apikey delete my-key
+evroc think apikey delete my-key --force
 ```
 
 ## Coding Agent Integration
@@ -233,8 +233,8 @@ curl -s -H "Authorization: Bearer ${TOKEN}" \
 
 - **Dedicated vs shared**: Shared models are zero-deployment. Dedicated instances
   require choosing a model and size, then waiting for deployment.
-- **Model IDs use HuggingFace format**: e.g. `mistralai/Ministral-8B-Instruct-2410`,
-  not a custom name.
+- **Model IDs use dashed format** matching `evroc think model list` output: e.g. `openai-gpt-oss-120b`,
+  not HuggingFace slash format.
 - **Size format**: Encodes GPU + resources, e.g. `1-b200-27c-240g`. Run
   `evroc think size list` for the authoritative list.
 - **API key expiry**: Keys created without `--expiry-timestamp` have no expiry.

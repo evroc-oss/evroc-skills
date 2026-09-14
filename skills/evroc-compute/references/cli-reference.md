@@ -76,6 +76,19 @@ Aliases: delete, del, rm
 |---|---|---|
 | `--force` | bool | Skip interactive prompts. |
 
+### evroc compute virtualmachine label
+
+Add or remove labels on a VM.
+
+```
+evroc compute virtualmachine label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
+
 ## Disks
 
 ### evroc compute disk create
@@ -144,12 +157,107 @@ evroc compute disk delete <name> [flags]
 Aliases: delete, del, rm
 ```
 
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
 ### evroc compute disk update
 
 ```
 evroc compute disk update <name> [flags]
 Aliases: update, u
 ```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--size-amount` | int | New size (can only increase). |
+| `--size-unit` | string | One of: `KB`, `MB`, `GB`, `TB`. |
+
+### evroc compute disk label
+
+Add or remove labels on a disk.
+
+```
+evroc compute disk label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
+
+## Hotswap Disk Attachments
+
+Hotswap disk attachments allow attaching a disk to a running VM without rebooting.
+
+### evroc compute hotswapdiskattachment create
+
+```
+evroc compute hotswapdiskattachment create <hotswapdiskattachment_id> [flags]
+Aliases: create, new
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--disk-ref` | string | Disk reference to attach. |
+| `--vm-ref` | string | VM reference to attach to. |
+
+### evroc compute hotswapdiskattachment list
+
+```
+evroc compute hotswapdiskattachment list [flags]
+Aliases: list, ls
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-l, --label-selector` | string | Kubernetes-style label selector. |
+| `-o, --out` | string | Output: `yaml`, `json`, `list` (default: `list`). |
+
+### evroc compute hotswapdiskattachment get
+
+```
+evroc compute hotswapdiskattachment get <hotswapdiskattachment_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-o, --out` | string | Output: `yaml` (default), `json`, `list`. |
+
+### evroc compute hotswapdiskattachment update
+
+```
+evroc compute hotswapdiskattachment update <hotswapdiskattachment_id> [flags]
+Aliases: update, u
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--disk-ref` | string | Disk reference to attach. |
+| `--vm-ref` | string | VM reference to attach to. |
+
+### evroc compute hotswapdiskattachment delete
+
+```
+evroc compute hotswapdiskattachment delete <hotswapdiskattachment_id> [flags]
+Aliases: delete, del, rm
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts and execute destructive actions. |
+
+### evroc compute hotswapdiskattachment label
+
+```
+evroc compute hotswapdiskattachment label <hotswapdiskattachment_id> [flags]
+Aliases: label
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
 
 ## Snapshots
 
@@ -193,6 +301,23 @@ evroc compute snapshot delete <name> [flags]
 Aliases: delete, del, rm
 ```
 
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
+### evroc compute snapshot label
+
+Add or remove labels on a snapshot.
+
+```
+evroc compute snapshot label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
+
 ## Placement Groups
 
 ### evroc compute placementgroup create
@@ -235,6 +360,23 @@ evroc compute placementgroup get <name> [flags]
 evroc compute placementgroup delete <name> [flags]
 Aliases: delete, del, rm
 ```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
+### evroc compute placementgroup label
+
+Add or remove labels on a placement group.
+
+```
+evroc compute placementgroup label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
 
 ## Compute Profile Format
 

@@ -83,7 +83,7 @@ evroc iam project update my-project --name "New Name"
 ### Delete a project
 
 ```bash
-evroc iam project delete my-project -f
+evroc iam project delete my-project --force
 ```
 
 **Completion criterion:** `evroc iam project get my-project` returns `not found`.
@@ -230,13 +230,13 @@ evroc iam serviceaccount credential list --service-account my-sa
 ### Revoke a credential
 
 ```bash
-evroc iam serviceaccount credential revoke cred-1 --service-account my-sa
+evroc iam serviceaccount credential revoke cred-1 --service-account my-sa --reason "Compromised"
 ```
 
 ### Delete a service account
 
 ```bash
-evroc iam serviceaccount delete my-sa
+evroc iam serviceaccount delete my-sa --force
 ```
 
 ## Access Tokens
@@ -280,6 +280,10 @@ Run `evroc iam rb roles` for the complete list.
   deny rules, and condition-based bindings are not yet available.
 - **Resource name limits**: Max 63 chars, lowercase alphanumeric with hyphens,
   starting/ending alphanumeric.
+- **Labeling service accounts**: Service accounts support the `label` subcommand for
+  adding/removing labels:
+  `evroc iam serviceaccount label <name> --add key=value --remove key`.
+  See [`references/cli-reference.md`](references/cli-reference.md) for details.
 - **MFA is OTP-only**: TOTP is the only supported MFA mechanism.
 - **Brute force protection**: After 10 failed login attempts, the account is locked for
   ~10 minutes with no visual indication.

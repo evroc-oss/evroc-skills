@@ -10,6 +10,7 @@ terraform {
 provider "evroc" {
   # Credentials and context read from ~/.evroc/config.yaml by default.
   # See: https://github.com/evroc-oss/terraform-provider-evroc#1-authenticate-with-evroc
+  region = var.evroc_region
 }
 
 # Query available disk images and compute profiles

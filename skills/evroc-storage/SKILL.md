@@ -130,16 +130,16 @@ evroc storage bucket list --include-all
 
 ```bash
 # Empty bucket
-evroc storage bucket delete my-bucket
+evroc storage bucket delete my-bucket --force
 
 # Non-empty bucket (purges all contents)
-evroc storage bucket delete my-bucket --purge -f
+evroc storage bucket delete my-bucket --purge --force
 
 # Specific object
 evroc storage bucket delete bucket://my-bucket/example.txt
 
 # All objects, keep bucket
-evroc storage bucket delete bucket://my-bucket/* -f
+evroc storage bucket delete bucket://my-bucket/* --force
 ```
 
 **Completion criterion:** `evroc storage bucket get my-bucket` returns `not found`.
@@ -168,7 +168,7 @@ evroc storage filestore get <filestore-name> -o yaml
 ### Delete a file store
 
 ```bash
-evroc storage filestore delete my-store -f
+evroc storage filestore delete my-store --force
 ```
 
 ## Bucket Service Accounts
@@ -196,7 +196,7 @@ evroc storage bucketserviceaccount get <service-account-name>
 ### Delete
 
 ```bash
-evroc storage bucketserviceaccount delete my-sa
+evroc storage bucketserviceaccount delete my-sa --force
 ```
 
 ## Pitfalls
@@ -212,5 +212,9 @@ evroc storage bucketserviceaccount delete my-sa
   The file store uses NFS v4.1.
 - **Bucket service accounts**: Must reference at least one bucket via `--bucket`
   (repeatable for multiple buckets).
+- **Labeling**: Buckets, file stores, and bucket service accounts support the `label`
+  subcommand for adding/removing labels:
+  `evroc storage <resource> label <name> --add key=value --remove key`.
+  See [`references/cli-reference.md`](references/cli-reference.md) for details.
 - **CLI aliases**: `bu` for `bucket`, `fs` for `filestore`, `bsa` for
   `bucketserviceaccount`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`.

@@ -154,10 +154,10 @@ evroc loadbalancer loadbalancer removelistener my-lb \
 Delete in reverse order: listener → load balancer → L4 route → backend service → backend pool.
 
 ```bash
-evroc loadbalancer loadbalancer delete my-lb -f
-evroc loadbalancer l4route delete my-route
-evroc loadbalancer backendservice delete my-service
-evroc loadbalancer backendpool delete my-pool
+evroc loadbalancer loadbalancer delete my-lb --force
+evroc loadbalancer l4route delete my-route --force
+evroc loadbalancer backendservice delete my-service --force
+evroc loadbalancer backendpool delete my-pool --force
 ```
 
 ## Pitfalls
@@ -168,4 +168,7 @@ evroc loadbalancer backendpool delete my-pool
 - **Health check target-port**: The `--target-port` on a health check is the port on the backend VM, not the listener port. These can differ.
 - **Backend references**: `--backend-ref` on a backend pool refers to VM names. Repeatable for multiple VMs.
 - **Beta service**: The load balancer service is in beta. Command syntax and resource semantics may change between releases.
+- **Labeling**: All load balancer resources support the `label` subcommand for adding/removing labels:
+  `evroc loadbalancer <resource> label <name> --add key=value --remove key`.
+  See [`references/cli-reference.md`](references/cli-reference.md) for details.
 - **CLI aliases**: `lb` for `loadbalancer`, `bp` for `backendpool`, `bs` for `backendservice`, `l4r` for `l4route`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`.

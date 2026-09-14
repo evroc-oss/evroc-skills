@@ -50,6 +50,17 @@ Aliases: delete, del, rm
 |---|---|---|
 | `--force` | bool | Skip interactive prompts. |
 
+### evroc loadbalancer lb update
+
+```
+evroc loadbalancer loadbalancer update <name> [flags]
+Aliases: update, u
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--public-ip-ref` | string | Public IP reference for the load balancer. |
+
 ### evroc loadbalancer lb addlistener
 
 ```
@@ -72,6 +83,19 @@ evroc loadbalancer loadbalancer removelistener <name> [flags]
 | Flag | Type | Description |
 |---|---|---|
 | `--listener-name` | string | Name of the listener to remove (required). |
+
+### evroc loadbalancer lb label
+
+Add or remove labels on a load balancer.
+
+```
+evroc loadbalancer loadbalancer label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
 
 ## Backend Pools
 
@@ -115,12 +139,34 @@ evroc loadbalancer backendpool delete <name> [flags]
 Aliases: delete, del, rm
 ```
 
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
 ### evroc loadbalancer bp update
 
 ```
 evroc loadbalancer backendpool update <name> [flags]
 Aliases: update, u
 ```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--append` | bool | Additive changes to backend refs. |
+| `--backend-ref` | strings | Reference to a backend VM (repeatable). |
+
+### evroc loadbalancer bp label
+
+Add or remove labels on a backend pool.
+
+```
+evroc loadbalancer backendpool label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
 
 ## Backend Services
 
@@ -167,6 +213,24 @@ evroc loadbalancer backendservice delete <name> [flags]
 Aliases: delete, del, rm
 ```
 
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
+### evroc loadbalancer bs update
+
+```
+evroc loadbalancer backendservice update <name> [flags]
+Aliases: update, u
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--backend-pool-ref` | string | Reference to the backend pool. |
+| `--ip-protocol-selection` | string | Backend IP protocol: `IPv4` or `IPv6`. |
+| `--port` | int | Listening port 1-65535. |
+| `--proxy-protocol` | bool | Enable proxy protocol. |
+
 ### evroc loadbalancer bs sethealthcheckhttp
 
 ```
@@ -175,7 +239,7 @@ evroc loadbalancer backendservice sethealthcheckhttp <name> [flags]
 
 | Flag | Type | Description |
 |---|---|---|
-| `--expected-statuses` | uints | HTTP status codes considered healthy (repeatable). |
+| `--expected-statuses` | uints | HTTP status codes considered healthy (repeatable). Default `[]`. |
 | `--healthy-threshold` | uint32 | Successes required to mark healthy. |
 | `--host` | string | HTTP Host header value. |
 | `--interval` | duration | Time between checks (e.g. `10s`). |
@@ -206,6 +270,19 @@ evroc loadbalancer backendservice sethealthchecktcp <name> [flags]
 ```
 evroc loadbalancer backendservice clearhealthcheck <name> [flags]
 ```
+
+### evroc loadbalancer bs label
+
+Add or remove labels on a backend service.
+
+```
+evroc loadbalancer backendservice label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
 
 ## L4 Routes
 
@@ -248,6 +325,34 @@ evroc loadbalancer l4route get <name> [flags]
 evroc loadbalancer l4route delete <name> [flags]
 Aliases: delete, del, rm
 ```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
+### evroc loadbalancer l4r update
+
+```
+evroc loadbalancer l4route update <name> [flags]
+Aliases: update, u
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--backend-service-ref` | string | Reference to the default backend service. |
+
+### evroc loadbalancer l4r label
+
+Add or remove labels on an L4 route.
+
+```
+evroc loadbalancer l4route label <name> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
 
 ## Resource Hierarchy
 
