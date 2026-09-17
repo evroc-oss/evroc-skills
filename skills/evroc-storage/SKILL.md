@@ -128,17 +128,15 @@ evroc storage bucket list --include-all
 
 ### Delete a bucket or objects
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your Bucket and cannot be undone."
->    If using `--purge`, append: "All objects within the bucket will also be deleted."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc storage bucket delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your Bucket '<bucket-name>' and cannot be undone."
+   If using `--purge`, append: "All objects within the bucket will also be deleted."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 # Empty bucket
@@ -179,16 +177,14 @@ evroc storage filestore get <filestore-name> -o yaml
 
 ### Delete a file store
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your File Store and cannot be undone."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc storage filestore delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your File Store '<filestore-name>' and cannot be undone."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc storage filestore delete my-store --force
@@ -218,16 +214,14 @@ evroc storage bucketserviceaccount get <service-account-name>
 
 ### Delete
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your Bucket Service Account and cannot be undone."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc storage bucketserviceaccount delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your Bucket Service Account '<sa-name>' and cannot be undone."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc storage bucketserviceaccount delete my-sa --force

@@ -90,16 +90,14 @@ with an assigned address.
 
 ### Delete a public IP
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your Public IP and cannot be undone."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc networking publicip delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your Public IP '<ip-name>' and cannot be undone."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc networking publicip delete <ip-name> --force
@@ -176,16 +174,14 @@ evroc networking securitygroup removerule my-sg \
 
 ### Delete a security group
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your Security Group and cannot be undone."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc networking securitygroup delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your Security Group '<sg-name>' and cannot be undone."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc networking securitygroup delete <sg-name> --force
@@ -231,16 +227,14 @@ evroc networking subnet create my-subnet-dual \
 
 ### Delete a subnet
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your Subnet and cannot be undone."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc networking subnet delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your Subnet '<subnet-name>' and cannot be undone."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc networking subnet delete <subnet-name> --force
@@ -283,16 +277,14 @@ evroc networking vpc create my-vpc-dual \
 
 ### Delete a VPC
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your VPC and cannot be undone."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc networking vpc delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your VPC '<vpc-name>' and cannot be undone."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc networking vpc delete <vpc-name> --force

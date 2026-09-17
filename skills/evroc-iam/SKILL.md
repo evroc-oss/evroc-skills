@@ -82,18 +82,16 @@ evroc iam project update my-project --name "New Name"
 
 ### Delete a project
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete the Project and cannot be undone.
->    Deleting a Project also deletes all associated resources within it
->    (VMs, disks, networks, load balancers, storage, etc.)."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc iam project delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete the Project '<project-name>' and cannot be undone.
+   Deleting a Project also deletes all associated resources within it
+   (VMs, disks, networks, load balancers, storage, etc.)."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc iam project delete my-project --force
@@ -180,17 +178,15 @@ evroc iam rb revoke \
 
 ### Delete all roles for a principal
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete the Role Binding and cannot be undone.
->    This revokes every role for that principal on the selected scope."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc iam rb delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete the Role Binding '<binding-name>' and cannot be undone.
+   This revokes every role for that principal on the selected scope."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc iam rb delete <binding-name>
@@ -254,17 +250,15 @@ evroc iam serviceaccount credential list --service-account my-sa
 
 ### Revoke a credential
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be revoked, including the
->    credential name and service account
-> 2. State the destruction warning:
->    "This will permanently revoke the Credential and cannot be undone.
->    Any services using this credential will immediately lose access."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the revoke command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc iam serviceaccount credential revoke` command, you MUST:
+1. Present the resource name(s) to the user, including the credential name and service account
+2. State the destruction warning in this exact format:
+   "This will permanently revoke the Credential '<cred-name>' and cannot be undone.
+   Any services using this credential will immediately lose access."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the revoke command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc iam serviceaccount credential revoke cred-1 --service-account my-sa --reason "Compromised"
@@ -272,17 +266,15 @@ evroc iam serviceaccount credential revoke cred-1 --service-account my-sa --reas
 
 ### Delete a service account
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your Service Account and cannot be undone.
->    All credentials associated with this service account will also be revoked."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc iam serviceaccount delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your Service Account '<sa-name>' and cannot be undone.
+   All credentials associated with this service account will also be revoked."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc iam serviceaccount delete my-sa --force

@@ -139,16 +139,14 @@ evroc think instance update my-instance --model <new-model-id>
 
 ### Delete an instance
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete the Model Instance and cannot be undone."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc think instance delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete the Model Instance '<instance-name>' and cannot be undone."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc think instance delete my-instance --force
@@ -178,17 +176,15 @@ evroc think apikey list
 
 ### Delete an API key
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with the resource(s) that will be deleted, including the
->    resource name and type
-> 2. State the destruction warning:
->    "This will permanently delete your API Key and cannot be undone.
->    Any services using this key will immediately lose access."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the delete command until the user responds with explicit confirmation.
+HALT: Before running ANY `evroc think apikey delete` command, you MUST:
+1. Present the resource name(s) to the user
+2. State the destruction warning in this exact format:
+   "This will permanently delete your API Key '<key-name>' and cannot be undone.
+   Any services using this key will immediately lose access."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the delete command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 evroc think apikey delete my-key --force

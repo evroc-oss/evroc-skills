@@ -107,19 +107,18 @@ Checks: cloud-init status, K3s nodes, Rancher pods, cert-manager pods.
 
 ### Destroy
 
-> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
->
-> Before running this command, you MUST:
-> 1. Present the user with ALL resources that will be destroyed (VMs, disks,
->    public IPs, security groups, networks, and all other Terraform-managed
->    resources in the deployment)
-> 2. State the destruction warning:
->    "This will permanently destroy the entire Rancher deployment and all
->    associated resources (VMs, disks, public IPs, security groups, networks)
->    and cannot be undone."
-> 3. Wait for the user to explicitly confirm before proceeding
->
-> Do NOT run the destroy command until the user responds with explicit confirmation.
+HALT: Before running `bash scripts/destroy.sh`, you MUST:
+1. Present ALL resources that will be destroyed to the user (VMs, disks,
+   public IPs, security groups, networks, and all other Terraform-managed
+   resources in the deployment)
+2. State the destruction warning in this exact format:
+   "This will permanently destroy the entire Rancher deployment and all
+   associated resources (VMs, disks, public IPs, security groups, networks)
+   and cannot be undone."
+3. Wait for the user to explicitly confirm before proceeding
+
+Do NOT run the destroy command until the user responds with explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
 
 ```bash
 bash scripts/destroy.sh <workdir>
