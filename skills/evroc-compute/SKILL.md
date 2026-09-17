@@ -386,9 +386,30 @@ undone. Deleting a Virtual Machine also deletes all associated Public IPs
 and Disks."
 
 Then:
-1. List the specific resource(s) that will be deleted (name, type, project)
-2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<vm-name>'."
-3. Wait for the user to explicitly type 'yes'
+1. Run a pre-deletion inspection to identify what's running on the VM:
+
+```bash
+bash scripts/inspect-vm-services.sh <vm-name> [ssh-user] [ssh-key-path]
+```
+
+- If the agent is running ON the VM, the script detects this automatically
+  and warns: "SELF-DESTRUCTION DETECTED — this session will be terminated."
+- If the agent is remote, the script SSHes into the VM and lists running
+  systemd services and Docker containers.
+- If the VM is stopped or SSH fails, the script exits 0 with a note —
+  non-blocking, proceed with the standard warning.
+
+2. Present the inspection results to the user alongside the resource list
+   (name, type, project). Include any services/containers that will be lost.
+3. If the inspection detected self-destruction, output this additional
+   warning VERBATIM:
+
+"WARNING: This agent is running on the VM you are about to delete. Deleting
+it will terminate this session immediately and any unsaved work will be lost.
+Consider migrating the agent to another VM before proceeding."
+
+4. Ask the user to confirm: "Type 'yes' to confirm deletion of '<vm-name>'."
+5. Wait for the user to explicitly type 'yes'
 
 Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
