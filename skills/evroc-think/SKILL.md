@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.1"
+  version: "1.2"
   category: ai
 allowed-tools: terminal, read_file
 ---
@@ -139,6 +139,17 @@ evroc think instance update my-instance --model <new-model-id>
 
 ### Delete an instance
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete the Model Instance and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 evroc think instance delete my-instance --force
 ```
@@ -166,6 +177,18 @@ evroc think apikey list
 ```
 
 ### Delete an API key
+
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your API Key and cannot be undone.
+>    Any services using this key will immediately lose access."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
 
 ```bash
 evroc think apikey delete my-key --force

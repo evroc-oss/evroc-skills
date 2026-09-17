@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux. This is a beta service — syntax may change between releases. First terraform init downloads the evroc provider from registry.terraform.io (~20 MB)."
 metadata:
   author: evroc
-  version: "1.1"
+  version: "1.2"
   category: networking
 allowed-tools: terminal, read_file
 ---
@@ -152,6 +152,20 @@ evroc loadbalancer loadbalancer removelistener my-lb \
 ## Delete Resources
 
 Delete in reverse order: listener → load balancer → L4 route → backend service → backend pool.
+
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running any delete command below, you MUST:
+> 1. Present the user with ALL resource(s) that will be deleted, including each
+>    resource name and type
+> 2. State the destruction warning for each:
+>    - Load Balancer: "This will permanently delete your Load Balancer and cannot be undone."
+>    - L4 Route: "This will permanently delete your L4 Route and cannot be undone."
+>    - Backend Service: "This will permanently delete your Backend Service and cannot be undone."
+>    - Backend Pool: "This will permanently delete your Backend Pool and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run any delete command until the user responds with explicit confirmation.
 
 ```bash
 evroc loadbalancer loadbalancer delete my-lb --force

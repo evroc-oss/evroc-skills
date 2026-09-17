@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires Terraform, evroc CLI authenticated with evroc login, curl, git, jq, and SSH. macOS or Linux. evroc account needs at least 2 free public IPs (3-IP quota). On first run, terraform init downloads the evroc provider binary (~20 MB) from registry.terraform.io."
 metadata:
   author: evroc
-  version: "1.1"
+  version: "1.2"
   category: orchestration
 allowed-tools: terminal, read_file
 ---
@@ -106,6 +106,20 @@ Checks: cloud-init status, K3s nodes, Rancher pods, cert-manager pods.
 [`references/troubleshooting.md`](references/troubleshooting.md).
 
 ### Destroy
+
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with ALL resources that will be destroyed (VMs, disks,
+>    public IPs, security groups, networks, and all other Terraform-managed
+>    resources in the deployment)
+> 2. State the destruction warning:
+>    "This will permanently destroy the entire Rancher deployment and all
+>    associated resources (VMs, disks, public IPs, security groups, networks)
+>    and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the destroy command until the user responds with explicit confirmation.
 
 ```bash
 bash scripts/destroy.sh <workdir>

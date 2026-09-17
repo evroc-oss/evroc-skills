@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.0"
+  version: "1.1"
   category: networking
 allowed-tools: terminal, read_file
 ---
@@ -90,6 +90,17 @@ with an assigned address.
 
 ### Delete a public IP
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your Public IP and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 evroc networking publicip delete <ip-name> --force
 ```
@@ -165,6 +176,17 @@ evroc networking securitygroup removerule my-sg \
 
 ### Delete a security group
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your Security Group and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 evroc networking securitygroup delete <sg-name> --force
 ```
@@ -209,6 +231,17 @@ evroc networking subnet create my-subnet-dual \
 
 ### Delete a subnet
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your Subnet and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 evroc networking subnet delete <subnet-name> --force
 ```
@@ -249,6 +282,17 @@ evroc networking vpc create my-vpc-dual \
 - **IPv6:** IPv6 addressing is automatic in dual-stack mode; no separate IPv6 CIDR flag is needed.
 
 ### Delete a VPC
+
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your VPC and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
 
 ```bash
 evroc networking vpc delete <vpc-name> --force

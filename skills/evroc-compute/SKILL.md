@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.1"
+  version: "1.2"
   category: infrastructure
 allowed-tools: terminal, read_file
 ---
@@ -378,6 +378,18 @@ Before creating a VM, verify or create these prerequisites:
 
 ### Delete a VM
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete the Virtual Machine and cannot be undone.
+>    Deleting a Virtual Machine also deletes all associated Public IPs and Disks."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 evroc compute vm delete my-vm --force
 ```
@@ -433,6 +445,17 @@ evroc compute disk create my-disk \
 
 ### Delete a disk
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your Disk and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 evroc compute disk delete <disk-name> --force
 ```
@@ -460,6 +483,17 @@ evroc compute hotswapdiskattachment list
 
 ### Delete a hotswap disk attachment
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete the Disk Attachment and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 evroc compute hotswapdiskattachment delete my-hda --force
 ```
@@ -485,6 +519,17 @@ evroc compute snapshot get <snapshot-name> -o yaml
 ```
 
 ### Delete a snapshot
+
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your Snapshot and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
 
 ```bash
 evroc compute snapshot delete <snapshot-name> --force
@@ -519,6 +564,17 @@ evroc compute vm create my-vm \
 ```
 
 ### Delete a placement group
+
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete the Placement Group and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
 
 ```bash
 evroc compute placementgroup delete my-pg --force

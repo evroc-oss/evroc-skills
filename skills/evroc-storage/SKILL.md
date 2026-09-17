@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.1"
+  version: "1.2"
   category: infrastructure
 allowed-tools: terminal, read_file
 ---
@@ -128,6 +128,18 @@ evroc storage bucket list --include-all
 
 ### Delete a bucket or objects
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your Bucket and cannot be undone."
+>    If using `--purge`, append: "All objects within the bucket will also be deleted."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 # Empty bucket
 evroc storage bucket delete my-bucket --force
@@ -167,6 +179,17 @@ evroc storage filestore get <filestore-name> -o yaml
 
 ### Delete a file store
 
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your File Store and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
+
 ```bash
 evroc storage filestore delete my-store --force
 ```
@@ -194,6 +217,17 @@ evroc storage bucketserviceaccount get <service-account-name>
 ```
 
 ### Delete
+
+> ⚠️ **DESTRUCTIVE ACTION — EXPLICIT USER CONFIRMATION REQUIRED**
+>
+> Before running this command, you MUST:
+> 1. Present the user with the resource(s) that will be deleted, including the
+>    resource name and type
+> 2. State the destruction warning:
+>    "This will permanently delete your Bucket Service Account and cannot be undone."
+> 3. Wait for the user to explicitly confirm before proceeding
+>
+> Do NOT run the delete command until the user responds with explicit confirmation.
 
 ```bash
 evroc storage bucketserviceaccount delete my-sa --force
