@@ -378,14 +378,19 @@ Before creating a VM, verify or create these prerequisites:
 
 ### Delete a VM
 
-HALT: Before running ANY `evroc compute vm delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete the Virtual Machine '<vm-name>' and cannot be undone.
-   Deleting a Virtual Machine also deletes all associated Public IPs and Disks."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc compute vm delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete the Virtual Machine '<vm-name>' and cannot be
+undone. Deleting a Virtual Machine also deletes all associated Public IPs
+and Disks."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<vm-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -443,13 +448,17 @@ evroc compute disk create my-disk \
 
 ### Delete a disk
 
-HALT: Before running ANY `evroc compute disk delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your Disk '<disk-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc compute disk delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your Disk '<disk-name>' and cannot be undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<disk-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -479,13 +488,18 @@ evroc compute hotswapdiskattachment list
 
 ### Delete a hotswap disk attachment
 
-HALT: Before running ANY `evroc compute hotswapdiskattachment delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete the Disk Attachment '<attachment-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc compute hotswapdiskattachment delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete the Disk Attachment '<attachment-name>' and
+cannot be undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<attachment-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -514,13 +528,18 @@ evroc compute snapshot get <snapshot-name> -o yaml
 
 ### Delete a snapshot
 
-HALT: Before running ANY `evroc compute snapshot delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your Snapshot '<snapshot-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc compute snapshot delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your Snapshot '<snapshot-name>' and cannot be
+undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<snapshot-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -557,13 +576,18 @@ evroc compute vm create my-vm \
 
 ### Delete a placement group
 
-HALT: Before running ANY `evroc compute placementgroup delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete the Placement Group '<pg-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc compute placementgroup delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete the Placement Group '<pg-name>' and cannot be
+undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<pg-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash

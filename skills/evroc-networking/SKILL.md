@@ -90,13 +90,17 @@ with an assigned address.
 
 ### Delete a public IP
 
-HALT: Before running ANY `evroc networking publicip delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your Public IP '<ip-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc networking publicip delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your Public IP '<ip-name>' and cannot be undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<ip-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -174,13 +178,18 @@ evroc networking securitygroup removerule my-sg \
 
 ### Delete a security group
 
-HALT: Before running ANY `evroc networking securitygroup delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your Security Group '<sg-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc networking securitygroup delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your Security Group '<sg-name>' and cannot be
+undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<sg-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -227,13 +236,18 @@ evroc networking subnet create my-subnet-dual \
 
 ### Delete a subnet
 
-HALT: Before running ANY `evroc networking subnet delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your Subnet '<subnet-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc networking subnet delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your Subnet '<subnet-name>' and cannot be
+undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<subnet-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -277,13 +291,17 @@ evroc networking vpc create my-vpc-dual \
 
 ### Delete a VPC
 
-HALT: Before running ANY `evroc networking vpc delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your VPC '<vpc-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc networking vpc delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your VPC '<vpc-name>' and cannot be undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<vpc-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash

@@ -153,16 +153,24 @@ evroc loadbalancer loadbalancer removelistener my-lb \
 
 Delete in reverse order: listener → load balancer → L4 route → backend service → backend pool.
 
-HALT: Before running ANY `evroc loadbalancer ... delete` command, you MUST:
-1. Present ALL resource name(s) to the user that will be deleted
-2. State the destruction warning for each resource:
-   - Load Balancer: "This will permanently delete your Load Balancer '<lb-name>' and cannot be undone."
-   - L4 Route: "This will permanently delete your L4 Route '<route-name>' and cannot be undone."
-   - Backend Service: "This will permanently delete your Backend Service '<service-name>' and cannot be undone."
-   - Backend Pool: "This will permanently delete your Backend Pool '<pool-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc loadbalancer ... delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run any delete command until the user responds with explicit confirmation.
+For load balancers: "This will permanently delete your Load Balancer
+'<lb-name>' and cannot be undone."
+For L4 routes: "This will permanently delete your L4 Route '<route-name>'
+and cannot be undone."
+For backend services: "This will permanently delete your Backend Service
+'<service-name>' and cannot be undone."
+For backend pools: "This will permanently delete your Backend Pool
+'<pool-name>' and cannot be undone."
+
+Then:
+1. List ALL specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of the listed resources."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run any delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash

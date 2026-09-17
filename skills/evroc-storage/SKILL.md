@@ -128,14 +128,20 @@ evroc storage bucket list --include-all
 
 ### Delete a bucket or objects
 
-HALT: Before running ANY `evroc storage bucket delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your Bucket '<bucket-name>' and cannot be undone."
-   If using `--purge`, append: "All objects within the bucket will also be deleted."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc storage bucket delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your Bucket '<bucket-name>' and cannot be
+undone."
+If using `--purge`, also output: "All objects within the bucket will also
+be deleted."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<bucket-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -177,13 +183,18 @@ evroc storage filestore get <filestore-name> -o yaml
 
 ### Delete a file store
 
-HALT: Before running ANY `evroc storage filestore delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your File Store '<filestore-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc storage filestore delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your File Store '<filestore-name>' and cannot
+be undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<filestore-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
@@ -214,13 +225,18 @@ evroc storage bucketserviceaccount get <service-account-name>
 
 ### Delete
 
-HALT: Before running ANY `evroc storage bucketserviceaccount delete` command, you MUST:
-1. Present the resource name(s) to the user
-2. State the destruction warning in this exact format:
-   "This will permanently delete your Bucket Service Account '<sa-name>' and cannot be undone."
-3. Wait for the user to explicitly confirm before proceeding
+HALT: Before running ANY `evroc storage bucketserviceaccount delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
 
-Do NOT run the delete command until the user responds with explicit confirmation.
+"This will permanently delete your Bucket Service Account '<sa-name>' and
+cannot be undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<sa-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
 
 ```bash
