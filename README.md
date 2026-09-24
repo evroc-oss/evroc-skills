@@ -6,7 +6,17 @@
 
 # evroc-skills
 
-Agent skills for working with evroc cloud infrastructure. Each skill follows the [Agent Skills specification](https://agentskills.io/specification).
+Agent skills for working with evroc cloud infrastructure. Each skill follows the [Agent Skills specification](https://agentskills.io/specification). These skills enable developers to create, modify, and delete resources and services on the [evroc](https://docs.evroc.com/). 
+
+> [!IMPORTANT]
+> Large Language Models (LLMs) are probabilistic and may produce inaccurate, inappropriate, or unintended actions. Use caution when using these tools to create and delete resources. 
+
+## Table of Contents
+- [Skills Overview](#skills)
+- [Repository Structure](#repository-structure)
+- [Installation](#installation)
+- [License](#license)
+- [Terms and Conditions](#terms-and-conditions)
 
 ## Skills
 
@@ -164,3 +174,7 @@ ln -s ~/evroc-skills/skills/ ~/.hermes/skills/
 ## License
 
 Apache-2.0
+
+## Terms and Conditions 
+
+All code here is covered by the [Terms and Conditions](https://evroc.com/legal/general-terms-and-conditions/) of evroc. 
