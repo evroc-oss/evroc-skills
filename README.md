@@ -17,6 +17,7 @@ This repository is packaged as a portable [Agent Plugin](https://agent-plugins.o
 - [Skills Overview](#skills)
 - [Repository Structure](#repository-structure)
 - [Installation](#installation)
+- [Usage](#usage)
 - [License](#license)
 - [Terms and Conditions](#terms-and-conditions)
 
@@ -105,6 +106,15 @@ evroc-skills/
             └── cli-reference.md
 ```
 
+
+## Installation
+
+To install the skills, run the below command:
+
+```
+npx skills add evroc-oss/evroc-skills
+```
+
 ## Usage
 
 Skills are automatically available once installed. The agent will use them when
@@ -126,77 +136,6 @@ Create a security group allowing SSH and HTTP, then attach it to my-vm
 
 ```
 Set up a Think Model instance and give me an API key for it
-```
-
-## Installation
-
-### Claude Code
-
-Claude Code discovers plugins from `.claude/skills/` (project-level) or `~/.claude/skills/` (global). See the [Claude Code skills docs](https://code.claude.com/docs/en/skills).
-
-**Project-level** (available in this project only):
-
-```bash
-git clone https://github.com/evroc-oss/evroc-skills.git
-mkdir -p .claude/skills
-cp -r evroc-skills/skills/ .claude/skills/
-```
-
-**Global** (available in all projects):
-
-```bash
-git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
-mkdir -p ~/.claude/skills
-ln -s ~/evroc-skills/skills/ ~/.claude/skills/
-```
-
-### Cursor
-
-Cursor discovers skills from `.cursor/skills/`, `.agents/skills/`, `.claude/skills/` (project-level), and `~/.cursor/skills/`, `~/.agents/skills/`, `~/.claude/skills/` (global). See the [Cursor skills docs](https://cursor.com/docs/skills).
-
-**Project-level:**
-
-```bash
-git clone https://github.com/evroc-oss/evroc-skills.git
-mkdir -p .cursor/skills
-cp -r evroc-skills/skills/ .cursor/skills/
-```
-
-**Global:**
-
-```bash
-git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
-mkdir -p ~/.cursor/skills
-ln -s ~/evroc-skills/skills/ ~/.cursor/skills/
-```
-
-### OpenCode
-
-OpenCode discovers skills from `.opencode/skills/`, `.claude/skills/`, `.agents/skills/` (project-level), and `~/.config/opencode/skills/`, `~/.claude/skills/`, `~/.agents/skills/` (global). See the [OpenCode skills docs](https://opencode.ai/docs/skills/).
-
-**Project-level:**
-
-```bash
-git clone https://github.com/evroc-oss/evroc-skills.git
-mkdir -p .opencode/skills
-cp -r evroc-skills/skills/ .opencode/skills/
-```
-
-**Global:**
-
-```bash
-git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
-mkdir -p ~/.config/opencode/skills
-ln -s ~/evroc-skills/skills/ ~/.config/opencode/skills/
-```
-
-### Hermes Agent
-
-Hermes discovers skills from `~/.hermes/skills/`.
-
-```bash
-git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
-ln -s ~/evroc-skills/skills/ ~/.hermes/skills/
 ```
 
 ## License
