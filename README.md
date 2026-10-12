@@ -6,7 +6,9 @@
 
 # evroc-skills
 
-Agent skills for working with evroc cloud infrastructure. Each skill follows the [Agent Skills specification](https://agentskills.io/specification). These skills enable developers to create, modify, and delete resources and services on the [evroc](https://docs.evroc.com/). 
+Agent skills for working with evroc cloud infrastructure. Each skill follows the [Agent Skills specification](https://agentskills.io/specification). These skills enable developers to create, modify, and delete resources and services on the [evroc](https://docs.evroc.com/).
+
+This repository is packaged as a portable [Agent Plugin](https://agent-plugins.org/) (spec v1.0.0). The root `plugin.json` manifest declares the plugin identity; the `skills/` directory contains the skill components discovered by any Agent Plugins-compatible client. 
 
 > [!IMPORTANT]
 > Large Language Models (LLMs) are probabilistic and may produce inaccurate, inappropriate, or unintended actions. Use caution when using these tools to create and delete resources. 
@@ -41,6 +43,7 @@ Each skill includes:
 
 ```
 evroc-skills/
+├── plugin.json
 ├── README.md
 └── skills/
     ├── evroc-compute/
@@ -98,6 +101,29 @@ evroc-skills/
         │   └── check-public-ip-quota.sh
         └── references/
             └── cli-reference.md
+```
+
+## Usage
+
+Skills are automatically available once installed. The agent will use them when
+relevant tasks are detected.
+
+**Examples:**
+
+```
+Create a VM with 50GB boot disk and nginx pre-installed
+```
+
+```
+List all my running VMs and show their public IPs
+```
+
+```
+Create a security group allowing SSH and HTTP, then attach it to my-vm
+```
+
+```
+Set up a Think Model instance and give me an API key for it
 ```
 
 ## Installation

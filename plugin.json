@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "evroc-skills",
+  "version": "1.0.0",
+  "description": "Agent skills for managing evroc cloud infrastructure: compute, networking, storage, IAM, load balancers, Think Models, and Rancher deployments.",
+  "author": {
+    "name": "evroc",
+    "url": "https://evroc.com"
+  },
+  "homepage": "https://github.com/evroc-oss/evroc-skills",
+  "repository": "https://github.com/evroc-oss/evroc-skills.git",
+  "license": "Apache-2.0",
+  "keywords": [
+    "evroc",
+    "cloud",
+    "infrastructure",
+    "compute",
+    "networking",
+    "storage",
+    "iam",
+    "load-balancer",
+    "think-models",
+    "rancher",
+    "terraform"
+  ]
+}
