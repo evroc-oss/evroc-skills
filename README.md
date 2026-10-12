@@ -8,7 +8,7 @@
 
 Agent skills for working with evroc cloud infrastructure. Each skill follows the [Agent Skills specification](https://agentskills.io/specification). These skills enable developers to create, modify, and delete resources and services on the [evroc](https://docs.evroc.com/).
 
-This repository is packaged as a portable [Agent Plugin](https://agent-plugins.org/) (spec v1.0.0). The root `plugin.json` manifest declares the plugin identity; the `skills/` directory contains the skill components discovered by any Agent Plugins-compatible client. 
+This repository is packaged as a portable [Agent Plugin](https://agent-plugins.org/) (spec v1.0.0). The root `plugin.json` manifest declares the plugin identity; the `skills/` directory contains the skill components discovered by any Agent Plugins-compatible client. It also includes a [Claude Plugin](https://claude.com/docs/plugins/build) manifest (`.claude-plugin/plugin.json`) and a [Cursor Plugin](https://cursor.com/docs/plugins) manifest (`.cursor-plugin/plugin.json`) for those clients.
 
 > [!IMPORTANT]
 > Large Language Models (LLMs) are probabilistic and may produce inaccurate, inappropriate, or unintended actions. Use caution when using these tools to create and delete resources. 
@@ -43,7 +43,9 @@ Each skill includes:
 
 ```
 evroc-skills/
-├── plugin.json
+├── plugin.json                    # Agent Plugin manifest (agent-plugins.org)
+├── .claude-plugin/plugin.json     # Claude Plugin manifest
+├── .cursor-plugin/plugin.json     # Cursor Plugin manifest
 ├── README.md
 └── skills/
     ├── evroc-compute/
@@ -130,7 +132,7 @@ Set up a Think Model instance and give me an API key for it
 
 ### Claude Code
 
-Claude Code discovers skills from `.claude/skills/` (project-level) or `~/.claude/skills/` (global). See the [Claude Code skills docs](https://code.claude.com/docs/en/skills).
+Claude Code discovers plugins from `.claude/skills/` (project-level) or `~/.claude/skills/` (global). See the [Claude Code skills docs](https://code.claude.com/docs/en/skills).
 
 **Project-level** (available in this project only):
 
@@ -165,7 +167,7 @@ cp -r evroc-skills/skills/ .cursor/skills/
 ```bash
 git clone https://github.com/evroc-oss/evroc-skills.git ~/evroc-skills
 mkdir -p ~/.cursor/skills
-ln -s ~/evroc-skills/skills/evroc-rancher ~/.cursor/skills/
+ln -s ~/evroc-skills/skills/ ~/.cursor/skills/
 ```
 
 ### OpenCode
@@ -203,4 +205,4 @@ Apache-2.0
 
 ## Terms and Conditions 
 
-All code here is covered by the [Terms and Conditions](https://evroc.com/legal/general-terms-and-conditions/) of evroc. 
+All code here is covered by the [Terms and Conditions](https://evroc.com/legal/general-terms-and-conditions/) of evroc.
