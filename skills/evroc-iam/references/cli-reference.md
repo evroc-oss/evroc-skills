@@ -223,9 +223,10 @@ Aliases: create, new
 
 | Flag | Type | Description |
 |---|---|---|
-| `--expires-in` | duration | Duration until expiry (default: `8760h` = 1 year). |
+| `--access-token-lifetime` | duration | Access token lifetime for `rs256-jwt` credentials (default: `300s`, min: `60s`, max: `28800s`). |
+| `--expires-in` | duration | Duration until credential expiry (default: `8760h` = 1 year; min: `24h`, max: `17520h`). Immutable after creation. |
 | `--service-account` | string | Service account ID (required). |
-| `--type` | string | Credential type (default: `rs256-jwt`). |
+| `--type` | string | Credential type: `rs256-jwt` (default, evroc public API) or `hmac-sigv4` (S3 compatible API). |
 
 ### evroc iam serviceaccount credential list
 
