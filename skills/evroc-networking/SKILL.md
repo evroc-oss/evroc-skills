@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.1"
+  version: "1.2"
   category: networking
 allowed-tools: terminal, read_file
 ---
@@ -310,20 +310,42 @@ evroc networking vpc delete <vpc-name> --force
 
 **Completion criterion:** `evroc networking vpc get <vpc-name>` returns `not found`.
 
-## Quota Check Helper (IPv4 Elastic IPs)
+## Quota Check Helper (Public IPs)
 
-Before creating resources that need public IPv4 addresses (load balancers, VMs
-with fixed IPv4), verify remaining quota:
+Pre-flight check (before creating resources that need public IPv4 addresses —
+load balancers, VMs with fixed IPv4, Rancher deployments):
 
 ```bash
 bash scripts/check-public-ip-quota.sh <needed>
+bash scripts/check-quota.sh publicips <needed>   # same info, newer script
 ```
 
-Returns the number of available elastic IPv4 addresses vs the 3-address
-account quota. Exits non-zero if insufficient.
+Both read the REAL public IP quota from the API (`evroc quotas orgquotas get`),
+not a hardcoded limit, so they are correct even for organizations with raised
+quotas. Exits non-zero if insufficient.
+
+For the post-failure path (a create that already returned 403 `InsufficientQuota`),
+see [Quota errors (InsufficientQuota)](#quota-errors-insufficientquota) below.
 
 **Not needed for IPv6.** Every VM in an IPv6-enabled subnet receives a
 public address automatically without quota tracking.
+
+## Quota errors (InsufficientQuota)
+
+Public IP creation fails with HTTP 403 when the organization's public IP quota is exhausted. The API response contains `reason: "InsufficientQuota"` and the text `not enough quota to perform request`.
+
+Committed quotas are org-wide: current usage in ANY project of the organization counts against the same limit. A 403 from an empty project usually means another project consumed the quota.
+
+HALT: When a `create` command fails with HTTP 403 and a body containing
+"InsufficientQuota" (or the text "not enough quota to perform request"), you MUST:
+
+1. Run: `bash scripts/check-quota.sh publicips` (or `evroc quotas orgquotas get`)
+2. Report to the user VERBATIM: current public IP usage and limit — e.g.
+   "Public IPs: 70/70 used — at limit"
+3. State: "To request a quota increase, contact support@evroc.com"
+4. Do NOT retry the command until the user decides (free unused IPs with
+   `evroc networking publicip delete <id>`, or contact support). A silence or
+   ambiguous response is NOT confirmation to retry.
 
 ## Pitfalls
 
@@ -335,9 +357,10 @@ public address automatically without quota tracking.
   one project cannot be attached to a VM in another project.
 - **Rule direction**: `Ingress` = inbound to the VM. `Egress` = outbound from the VM.
   The default-deny applies to both directions independently.
-- **IPv4 quota**: evroc accounts have a 3-address elastic IPv4 quota. IPv6 has no per-address quota. Run
-  `evroc networking publicip list` to check IPv4 usage. Free unused IPv4 addresses before
-  creating new ones.
+- **IPv4 quota**: The public IPv4 quota is org-level (commonly 3 by default, raisable). IPv6 has no per-address
+  quota. Check REAL usage and limit with `evroc quotas orgquotas get` or
+  `bash scripts/check-public-ip-quota.sh`. Free unused IPv4 addresses before
+  creating new ones. To request a quota increase, contact support@evroc.com.
 - **IPv6 security groups require ICMP**: In dual-stack or IPv6-only subnets, security group rules
   must explicitly allow ICMP traffic. The CLI `--protocol ICMP` value covers both ICMPv4 and
   ICMPv6 depending on the CIDR family. IPv6 Neighbor Discovery (N/D), Router Solicitation (RS),

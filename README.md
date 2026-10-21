@@ -37,6 +37,9 @@ Each skill includes:
 
 - **Routing-optimized `description`** — clear "Use when... Do NOT use for..." triggers for agent routing
 - **Verifiable completion criteria** — exact commands to confirm success
+- **Quota failure mode** — every resource skill detects 403 `InsufficientQuota` errors,
+  shows real quota usage via `evroc quotas orgquotas get`, and directs the user to
+  support@evroc.com for quota increases
 - **`references/`** — CLI flag references and domain-specific guides.
 - **`scripts/`** — deterministic helper scripts for fragile operations and auth checks. 
 
@@ -52,7 +55,8 @@ evroc-skills/
     ├── evroc-compute/
     │   ├── SKILL.md
     │   ├── scripts/
-    │   │   └── check-auth.sh
+    │   │   ├── check-auth.sh
+    │   │   └── check-quota.sh
     │   └── references/
     │       └── cli-reference.md
     ├── evroc-iam/
@@ -64,7 +68,8 @@ evroc-skills/
     ├── evroc-loadbalancer/
     │   ├── SKILL.md
     │   ├── scripts/
-    │   │   └── check-auth.sh
+    │   │   ├── check-auth.sh
+    │   │   └── check-quota.sh
     │   └── references/
     │       └── cli-reference.md
     ├── evroc-rancher/
@@ -87,20 +92,23 @@ evroc-skills/
     ├── evroc-storage/
     │   ├── SKILL.md
     │   ├── scripts/
-    │   │   └── check-auth.sh
+    │   │   ├── check-auth.sh
+    │   │   └── check-quota.sh
     │   └── references/
     │       └── cli-reference.md
     ├── evroc-think/
     │   ├── SKILL.md
     │   ├── scripts/
-    │   │   └── check-auth.sh
-    │   └── references/
-    │       ├── cli-reference.md
-    │       └── dedicated-instances.md
+    │   │   ├── check-auth.sh
+    │   │   └── check-quota.sh
+    │   ├── references/
+    │   │   ├── cli-reference.md
+    │   │   └── dedicated-instances.md
     └── evroc-networking/
         ├── SKILL.md
         ├── scripts/
         │   ├── check-auth.sh
+        │   ├── check-quota.sh
         │   └── check-public-ip-quota.sh
         └── references/
             └── cli-reference.md
