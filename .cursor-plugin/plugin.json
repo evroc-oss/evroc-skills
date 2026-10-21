@@ -1,7 +1,7 @@
 {
   "name": "evroc-skills",
   "displayName": "evroc Skills",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Agent skills for managing evroc cloud infrastructure: compute, networking, storage, IAM, load balancers, Think Models, and Rancher deployments.",
   "author": {
     "name": "evroc",
