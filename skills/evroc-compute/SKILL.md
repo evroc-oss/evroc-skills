@@ -628,9 +628,10 @@ HALT: When a `create` or `update` command fails with HTTP 403 and a body contain
 2. Report to the user VERBATIM which resource is at its limit, its current usage, and
    its limit — e.g. "vCPUs: 250/250 used — at limit"
 3. State: "To request a quota increase, contact support@evroc.com"
-4. Do NOT retry the command or attempt workarounds free of other resources until the
-   user decides (delete unused resources from the same quota, reduce the requested
-   size, or contact support)
+4. Do NOT retry the command or attempt to free other resources until the
+   user decides (delete unused resources from the same quota, reduce the
+   requested size, or contact support). A silence or ambiguous response
+   is NOT confirmation to retry.
 
 Quota resources for compute and where they surface:
 

@@ -312,8 +312,8 @@ evroc networking vpc delete <vpc-name> --force
 
 ## Quota Check Helper (Public IPs)
 
-Before creating resources that need public IPv4 addresses (load balancers, VMs
-with fixed IPv4), verify remaining quota:
+Pre-flight check (before creating resources that need public IPv4 addresses —
+load balancers, VMs with fixed IPv4, Rancher deployments):
 
 ```bash
 bash scripts/check-public-ip-quota.sh <needed>
@@ -323,6 +323,9 @@ bash scripts/check-quota.sh publicips <needed>   # same info, newer script
 Both read the REAL public IP quota from the API (`evroc quotas orgquotas get`),
 not a hardcoded limit, so they are correct even for organizations with raised
 quotas. Exits non-zero if insufficient.
+
+For the post-failure path (a create that already returned 403 `InsufficientQuota`),
+see [Quota errors (InsufficientQuota)](#quota-errors-insufficientquota) below.
 
 **Not needed for IPv6.** Every VM in an IPv6-enabled subnet receives a
 public address automatically without quota tracking.

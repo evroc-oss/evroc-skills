@@ -19,11 +19,17 @@ command -v jq >/dev/null || { echo "Error: jq is required" >&2; exit 1; }
 RESOURCE="${1:-}"
 NEEDED="${2:-}"
 
-# One JSON fetch for all parsing below
-DATA=$(evroc quotas orgquotas get -o json 2>/dev/null)
+# One JSON fetch for all parsing below. Guard explicitly: under set -e an
+# unguarded $(...) would abort the script silently (stderr swallowed), and a
+# diagnostic that dies without a message is worse than the error it checks.
+if ! DATA=$(evroc quotas orgquotas get -o json 2>/dev/null); then
+    echo "Error: could not fetch organization quotas — the evroc CLI call failed." >&2
+    echo "Check auth with 'evroc login', or run 'evroc quotas orgquotas get' to see the raw error." >&2
+    exit 1
+fi
 
 # Show the human-readable table (single CLI call, goes to stdout)
-evroc quotas orgquotas get 2>/dev/null
+evroc quotas orgquotas get 2>/dev/null || true
 
 num() { # num <group> <field>
     jq -r --arg g "$1" --arg f "$2" \
