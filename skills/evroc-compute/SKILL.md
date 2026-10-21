@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.2"
+  version: "1.3"
   category: infrastructure
 allowed-tools: terminal, read_file
 ---
@@ -615,6 +615,32 @@ A silence or ambiguous response is NOT confirmation.
 evroc compute placementgroup delete my-pg --force
 ```
 
+## Quota errors (InsufficientQuota)
+
+VM `create`/`update` and disk `create` fail with HTTP 403 when the organization quota is exhausted. The API response contains `reason: "InsufficientQuota"` and the text `not enough quota to perform request` (e.g. for vCPUs, memory, block storage, or GPUs).
+
+Committed quotas are org-wide: current usage in ANY project of the organization counts against the same limit. A 403 on an empty project usually means another project consumed the quota.
+
+HALT: When a `create` or `update` command fails with HTTP 403 and a body containing
+"InsufficientQuota" (or the text "not enough quota to perform request"), you MUST:
+
+1. Run: `evroc quotas orgquotas get` (or `bash scripts/check-quota.sh <resource>` for compute fields)
+2. Report to the user VERBATIM which resource is at its limit, its current usage, and
+   its limit — e.g. "vCPUs: 250/250 used — at limit"
+3. State: "To request a quota increase, contact support@evroc.com"
+4. Do NOT retry the command or attempt workarounds free of other resources until the
+   user decides (delete unused resources from the same quota, reduce the requested
+   size, or contact support)
+
+Quota resources for compute and where they surface:
+
+| Quota field | Consumed by | Check with |
+|---|---|---|
+| `compute.vCPUs` | Any VM flavor | `bash scripts/check-quota.sh vcpus [needed]` |
+| `compute.memory` | Any VM flavor | `bash scripts/check-quota.sh memory` |
+| `compute.blockStorage` | Disks | `bash scripts/check-quota.sh blockstorage` |
+| `compute.gpus.<model>` | GPU flavors / Think dedicated instances | `bash scripts/check-quota.sh gpus [needed]` |
+
 ## Pitfalls
 
 - **Disk images — ask, don't guess**: There is no `disk image list` CLI command.
@@ -689,6 +715,7 @@ evroc compute placementgroup delete my-pg --force
  
 
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
+- **Quota**: Run `bash scripts/check-quota.sh vcpus` (or `memory`, `blockstorage`, `gpus`) to see real org quota usage. Quota is org-wide across all projects.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
 - **Subnet naming**: Pattern is `default-<region>-<zone>`. The zone in the subnet name must

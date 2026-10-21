@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux. This is a beta service — syntax may change between releases. First terraform init downloads the evroc provider from registry.terraform.io (~20 MB)."
 metadata:
   author: evroc
-  version: "1.2"
+  version: "1.3"
   category: networking
 allowed-tools: terminal, read_file
 ---
@@ -180,6 +180,23 @@ evroc loadbalancer backendservice delete my-service --force
 evroc loadbalancer backendpool delete my-pool --force
 ```
 
+## Quota errors (InsufficientQuota)
+
+Load balancer creation fails with HTTP 403 when the organization's load balancer quota is exhausted. The API response contains `reason: "InsufficientQuota"` and the text `not enough quota to perform request`. The load balancer count quota is separate from the public IP quota — a load balancer also needs a free public IP (see **evroc-networking**).
+
+Committed quotas are org-wide: current usage in ANY project of the organization counts against the same limit.
+
+HALT: When a `create` command fails with HTTP 403 and a body containing
+"InsufficientQuota" (or the text "not enough quota to perform request"), you MUST:
+
+1. Run: `bash scripts/check-quota.sh lbs` (or `evroc quotas orgquotas get`)
+2. Report to the user VERBATIM: current load balancer usage and limit — e.g.
+   "Load Balancers: 40/40 used — at limit"
+3. State: "To request a quota increase, contact support@evroc.com"
+4. Do NOT retry the command until the user decides (delete unused load balancers
+   top-down: listener → load balancer → route → service → pool, or contact support).
+   A silence or ambiguous response is NOT confirmation to retry.
+
 ## Pitfalls
 
 - **Public IP required**: A load balancer requires a pre-existing public IP referenced by `--public-ip-ref`. Create it via **evroc-networking**.
@@ -191,4 +208,7 @@ evroc loadbalancer backendpool delete my-pool --force
 - **Labeling**: All load balancer resources support the `label` subcommand for adding/removing labels:
   `evroc loadbalancer <resource> label <name> --add key=value --remove key`.
   See [`references/cli-reference.md`](references/cli-reference.md) for details.
+- **Load balancer quota (org-level)**: Load balancer count is limited by an org quota. Check real usage with
+  `bash scripts/check-quota.sh lbs` or `evroc quotas orgquotas get`. To request an increase,
+  contact support@evroc.com.
 - **CLI aliases**: `lb` for `loadbalancer`, `bp` for `backendpool`, `bs` for `backendservice`, `l4r` for `l4route`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`.

@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires Terraform, evroc CLI authenticated with evroc login, curl, git, jq, and SSH. macOS or Linux. evroc account needs at least 2 free public IPs (3-IP quota). On first run, terraform init downloads the evroc provider binary (~20 MB) from registry.terraform.io."
 metadata:
   author: evroc
-  version: "1.2"
+  version: "1.3"
   category: orchestration
 allowed-tools: terminal, read_file
 ---
@@ -167,12 +167,13 @@ into the work directory at deploy time:
 
 ## Pitfalls
 
-- **Public IP quota**: evroc accounts have a 3-IP quota. The deployment needs
-  1 IP for the Rancher server + 1 IP per workload node. Run
+- **Public IP quota**: The public IP quota is org-level (commonly 3 by default, raisable).
+  The deployment needs 1 IP for the Rancher server + 1 IP per workload node. Run
   `bash scripts/check-public-ip-quota.sh <needed>` before deploying (or use the
-  **evroc-networking** skill). If the user hits a 403 quota error, they must free
-  IPs via evroc-networking:
-  `evroc networking publicip list` + `evroc networking publicip delete <id>`.
+  **evroc-networking** skill). If the user hits a 403 quota error (`InsufficientQuota`),
+  run `evroc quotas orgquotas get` to show real usage, then either free IPs via
+  evroc-networking (`evroc networking publicip list` + `evroc networking publicip delete <id>`)
+  or contact support@evroc.com to request a quota increase.
 - **Bootstrap time**: Rancher takes 5–10 minutes to become ready after VMs are
   provisioned. A 404 at the Rancher URL during this window is normal.
 - **SSH key mismatch**: The SSH key in `terraform.tfvars` must match the key used

@@ -1,23 +1,34 @@
 #!/usr/bin/env bash
 # evroc-networking ELASTIC IPv4 QUOTA CHECKER
-# Returns the number of available ELASTIC IPv4 addresses vs the 3-address quota.
+# Checks real org quota from the API instead of a hardcoded 3-address limit.
+#
+# Usage:
+#   bash scripts/check-public-ip-quota.sh <needed>
+#
 # Does NOT check IPv6 — IPv6 addresses are abundant and auto-assigned from subnet
 # prefixes without per-address quotas.
 #
-# Requires: evroc CLI authenticated, jq
+# NOTE: org quotas span ALL projects in the organization. Usage in a different
+# project consumes the same org-level limit.
 
 set -euo pipefail
 
 NEEDED="${1:-1}"
 
-USED=$(evroc networking publicip list -o json 2>/dev/null | jq 'length')
-AVAILABLE=$((3 - USED))
+command -v jq >/dev/null || { echo "Error: jq is required" >&2; exit 1; }
 
-echo "Elastic IPv4 quota: ${USED}/3 used, ${AVAILABLE} available"
+DATA=$(evroc quotas orgquotas get -o json 2>/dev/null)
+
+USED=$(jq -r '(.status.quotaUsage.networking.publicIPs // 0)' <<<"${DATA}")
+LIMIT=$(jq -r '(.spec.quotas.networking.publicIPs // 0)' <<<"${DATA}")
+AVAILABLE=$(( LIMIT - USED ))
+
+echo "Elastic IPv4 quota: ${USED}/${LIMIT} used, ${AVAILABLE} available"
 
 if [[ ${AVAILABLE} -lt ${NEEDED} ]]; then
     echo "Error: Need ${NEEDED} elastic IPv4 addresses, but only ${AVAILABLE} available."
-    echo "Free IPv4s with: evroc networking publicip delete <id>"
+    echo "Free IPs with: evroc networking publicip delete <id>"
     echo "Note: IPv6 addresses have no quota. Each VM in an IPv6-enabled subnet gets one automatically."
+    echo "To request a quota increase, contact support@evroc.com"
     exit 1
 fi

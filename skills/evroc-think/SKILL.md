@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.2"
+  version: "1.3"
   category: ai
 allowed-tools: terminal, read_file
 ---
@@ -257,6 +257,23 @@ curl -s -H "Authorization: Bearer ${TOKEN}" \
   "import sys,json; [print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
 
+## Quota errors (InsufficientQuota)
+
+Dedicated instance creation fails with HTTP 403 when the organization's GPU quota is exhausted. The API response contains `reason: "InsufficientQuota"` and the text `not enough quota to perform request`.
+
+Committed quotas are org-wide: current usage in ANY project of the organization counts against the same GPU limit. A 403 on an empty project usually means another project (or a GPU VM) consumed the GPU quota.
+
+HALT: When an `instance create` command fails with HTTP 403 and a body containing
+"InsufficientQuota" (or the text "not enough quota to perform request"), you MUST:
+
+1. Run: `bash scripts/check-quota.sh gpus` (or `evroc quotas orgquotas get`)
+2. Report to the user VERBATIM: for each GPU model, current usage and limit — e.g.
+   "GPUs B200: 2/2 used — at limit"
+3. State: "To request a quota increase, contact support@evroc.com"
+4. Do NOT retry the command until the user decides (stop/delete unused dedicated
+   instances via evroc-compute, reduce the instance size, or contact support).
+   A silence or ambiguous response is NOT confirmation to retry.
+
 ## Pitfalls
 
 - **Dedicated vs shared**: Shared models are zero-deployment. Dedicated instances
@@ -272,5 +289,8 @@ curl -s -H "Authorization: Bearer ${TOKEN}" \
   `evroc think apikey list` after to see what was created.
 - **OpenAI API compatibility**: Endpoints follow OpenAI format.
   Any OpenAI-compatible client works.
+- **Dedicated instances consume org GPU quota**: GPU-backed dedicated instances count against
+  `compute.gpus.<model>` in the org quota, shared with GPU VM flavors. Check real availability with
+  `bash scripts/check-quota.sh gpus` or `evroc quotas orgquotas get` before creating.
 - **CLI aliases**: `mi` for `modelinstance`/`instance`, `ls` for `list`,
   `rm`/`del` for `delete`, `new` for `create`.
