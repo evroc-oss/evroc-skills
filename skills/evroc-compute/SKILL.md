@@ -664,9 +664,11 @@ The numeric usage helper fields (`memoryInKiBs`, `blockStorageInMBs`) are what t
 
 - **CLI upgrade, never silent**: `evroc upgrade` replaces the CLI binary. `check-cli.sh` reports
   "UPGRADE AVAILABLE" via `evroc upgrade --dry-run` — the agent must ask the user and receive an
-  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Note the flag trap:
-  `evroc --version` does not exist (use the `evroc version` subcommand), but
-  `evroc upgrade --version <release-name>` IS a valid flag that installs exactly that named release.
+  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Version flag trap:
+  the CLI reports its version with the `evroc version` subcommand (this always exists);
+  `evroc --version` and `evroc -v` do NOT exist on the CLI root. The only valid `--version` flag is
+  on the upgrade subcommand — `evroc upgrade --version <release-name>` installs exactly that named
+  published release (e.g. `--version 20261019-1792428909-root-3d363240`).
 - **Disk images — ask, don't guess**: There is no `disk image list` CLI command.
   For the live, current list, run:
   ```bash

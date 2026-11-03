@@ -218,9 +218,11 @@ HALT: When a `create` command fails with HTTP 403 and a body containing
 
 - **CLI upgrade, never silent**: `evroc upgrade` replaces the CLI binary. `check-cli.sh` reports
   "UPGRADE AVAILABLE" via `evroc upgrade --dry-run` — the agent must ask the user and receive an
-  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Note the flag trap:
-  `evroc --version` does not exist (use the `evroc version` subcommand), but
-  `evroc upgrade --version <release-name>` IS a valid flag that installs exactly that named release.
+  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Version flag trap:
+  the CLI reports its version with the `evroc version` subcommand (this always exists);
+  `evroc --version` and `evroc -v` do NOT exist on the CLI root. The only valid `--version` flag is
+  on the upgrade subcommand — `evroc upgrade --version <release-name>` installs exactly that named
+  published release (e.g. `--version 20261019-1792428909-root-3d363240`).
 - **Public IP required**: A load balancer requires a pre-existing public IP referenced by `--public-ip-ref`. Create it via **evroc-networking**.
 - **Hierarchy order**: Create bottom-up (pool → service → route → load balancer → listener). Delete top-down.
 - **Listener protocol**: Currently only `TCP` is supported for listener protocol.
