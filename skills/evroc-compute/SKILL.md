@@ -401,8 +401,8 @@ HALT: Before running ANY `evroc compute vm delete` command, you MUST output
 this message to the user VERBATIM before doing anything else:
 
 "This will permanently delete the Virtual Machine '<vm-name>' and cannot be
-undone. Deleting a Virtual Machine also deletes all associated Public IPs
-and Disks."
+undone. Deleting a Virtual Machine does NOT delete its attached Disks or
+Public IPs — they remain in the project and must be deleted separately."
 
 Then:
 1. Run a pre-deletion inspection to identify what's running on the VM:
@@ -432,6 +432,12 @@ Consider migrating the agent to another VM before proceeding."
 
 Do NOT run the delete command until the user explicitly confirms.
 A silence or ambiguous response is NOT confirmation.
+
+6. After the VM is deleted, list the surviving attached resources (Disks, and
+   the Public IP if one was attached — they are NOT deleted with the VM) and
+   ask which to clean up. Each follows its own delete HALT gate
+   (`evroc compute disk delete`, `evroc networking publicip delete`). A disk
+   must be detached before it can be deleted.
 
 ```bash
 evroc compute vm delete my-vm --force
@@ -739,6 +745,12 @@ The numeric usage helper fields (`memoryInKiBs`, `blockStorageInMBs`) are what t
   to check readiness. For VM running state, use `.status.virtualMachineStatus`.
 - **Wait for disk Ready before VM create**: A disk that is not yet Ready will cause VM
   creation to fail with "disk is not ready". Always poll the disk's Ready condition first.
+- **Deleting a VM does NOT delete its Disks or Public IP**: Disks and Public IPs are
+  independent resources — they survive VM deletion and keep consuming quota
+  (verified live Nov 2026; docs: "Deleting a VM doesn't delete attached disks
+  or Public IPs"). After a VM delete, list the surviving disks/attached IP and
+  clean them up separately — each goes through its own delete HALT gate. A disk
+  or Public IP must be detached before it can be deleted.
 - **Security groups — check or create before VM creation**: Without explicitly assigned
   security groups, the VM's firewall drops all traffic. Before creating a VM, check
   existing groups with `evroc networking securitygroup list`. If the user needs SSH access,
