@@ -27,10 +27,10 @@ This repository is packaged as a portable [Agent Plugin](https://agent-plugins.o
 | --- | --- |
 | `evroc-rancher` | Deploy, inspect, and destroy Rancher Manager on evroc using Terraform |
 | `evroc-networking` | Create, manage, and delete public IPs, security groups, subnets, and VPCs on evroc cloud |
-| `evroc-compute` | Manage evroc compute resources: VMs, disks, snapshots, and placement groups via the evroc CLI |
-| `evroc-storage` | Manage evroc storage: S3-compatible buckets, file stores, and bucket service accounts |
+| `evroc-compute` | Manage evroc compute resources: VMs, disks, snapshots, custom disk images, and placement groups via the evroc CLI |
+| `evroc-storage` | Manage evroc storage: S3-compatible buckets, file stores, bucket service accounts, and KMS keys |
 | `evroc-loadbalancer` | Manage evroc load balancers: backend pools, services, health checks, L4 routes, and listeners |
-| `evroc-iam` | Manage evroc IAM: projects, role bindings, service accounts, and credentials |
+| `evroc-iam` | Manage evroc IAM: projects, role bindings, service accounts, credentials, and organization users and invitations |
 | `evroc-think` | Manage evroc Think Models: dedicated instances, shared models, API keys, and coding agent integration |
 
 Each skill includes:
