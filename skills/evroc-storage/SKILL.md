@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.2"
+  version: "1.5"
   category: infrastructure
 allowed-tools: terminal, read_file
 ---
@@ -35,6 +35,22 @@ Ensure the evroc CLI is installed:
 ```bash
 bash scripts/check-cli.sh
 ```
+
+CLI upgrade confirmation: `check-cli.sh` also runs `evroc upgrade --dry-run` and
+prints "UPGRADE AVAILABLE" when a newer CLI release exists. Upgrading replaces
+the binary mid-session, so it requires explicit user consent.
+
+HALT: If check-cli.sh (or any command output) reports "UPGRADE AVAILABLE", you MUST:
+
+1. Show the user the dry-run report (current release, newer release, install path)
+2. Ask: "Upgrade the evroc CLI now? Type 'yes' to confirm."
+3. Wait for the user to explicitly type 'yes'
+
+Only then run `evroc upgrade` (it verifies checksums, backs up the previous
+binary, and rolls back automatically if the new binary fails its self-test).
+Do NOT run `evroc upgrade` without explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
+If the user declines, continue with the current CLI version.
 
 Then authenticate:
 
@@ -243,8 +259,34 @@ A silence or ambiguous response is NOT confirmation.
 evroc storage bucketserviceaccount delete my-sa --force
 ```
 
+## Quota errors (InsufficientQuota)
+
+Object storage is limited by a PROJECT quota (`spec.objectStorage.totalSize`), unlike other services which use org quotas. Writes beyond the total size limit fail — the S3 proxy returns `QuotaExceeded` on object PUTs, and bucket/file store limits reject with HTTP 403 containing `reason: "InsufficientQuota"` and the text `not enough quota to perform request`.
+
+IMPORTANT: the quota API does not report current object-storage usage — `evroc quotas projectquotas get` returns an empty `status` (the CLI table shows "Current: -"). `check-quota.sh` therefore shows the limit only and cannot verify whether N GB fit; the S3 proxy enforces the real total at write time.
+
+HALT: When a bucket write fails with `QuotaExceeded` or a `create` command fails
+with HTTP 403 and a body containing "InsufficientQuota" (or the text
+"not enough quota to perform request"), you MUST:
+
+1. Run: `bash scripts/check-quota.sh size` (or `evroc quotas projectquotas get`)
+   — note: project quota, not `evroc quotas orgquotas get`
+2. Report to the user VERBATIM: the project object storage limit (usage is not
+   exposed by the API) — e.g. "Object Storage limit: 10TB (usage not reported)"
+3. State: "To request a quota increase, contact support@evroc.com"
+4. Do NOT retry the write or attempt workarounds until the user decides (delete
+   unneeded objects/buckets, or contact support). A silence or ambiguous
+   response is NOT confirmation to retry.
+
 ## Pitfalls
 
+- **CLI upgrade, never silent**: `evroc upgrade` replaces the CLI binary. `check-cli.sh` reports
+  "UPGRADE AVAILABLE" via `evroc upgrade --dry-run` — the agent must ask the user and receive an
+  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Version flag trap:
+  the CLI reports its version with the `evroc version` subcommand (this always exists);
+  `evroc --version` and `evroc -v` do NOT exist on the CLI root. The only valid `--version` flag is
+  on the upgrade subcommand — `evroc upgrade --version <release-name>` installs exactly that named
+  published release (e.g. `--version 20261019-1792428909-root-3d363240`).
 - **S3 credentials required for copy**: `bucket copy` and `bucket list` (within buckets)
   read S3 credentials from `~/.evroc/credentials.ini`. Run
   `evroc storage bucket get-s3-credentials` first if you haven't already.
@@ -260,5 +302,11 @@ evroc storage bucketserviceaccount delete my-sa --force
   subcommand for adding/removing labels:
   `evroc storage <resource> label <name> --add key=value --remove key`.
   See [`references/cli-reference.md`](references/cli-reference.md) for details.
+- **Object storage quota is project-scoped**: Check the limit with
+  `evroc quotas projectquotas get` (hidden but works) or
+  `bash scripts/check-quota.sh size`. Usage is NOT reported by the quota API
+  (empty `status`), so the script shows the limit only. S3 PUTs beyond the
+  limit fail with `QuotaExceeded`. To request an increase, contact
+  support@evroc.com.
 - **CLI aliases**: `bu` for `bucket`, `fs` for `filestore`, `bsa` for
   `bucketserviceaccount`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`.

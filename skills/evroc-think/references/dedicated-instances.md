@@ -113,11 +113,21 @@ evroc config current-project
 
 ### Out of quota
 
-evroc limits GPU instances per account. If `instance create` fails with a quota error:
+GPU instances count against the organization's GPU quota. If `instance create` fails with a 403 `InsufficientQuota` error ("not enough quota to perform request"):
+
 ```bash
-# List existing instances
-evroc think instance list
+# Check real GPU quota: usage vs limit per model
+bash scripts/check-quota.sh gpus
+# or equivalently
+evroc quotas orgquotas get
 
 # Stop or delete unused instances before creating new ones
+evroc think instance list
 evroc think instance stop unused-instance
 ```
+
+If the quota is genuinely needed, tell the user:
+"To request a quota increase, contact support@evroc.com"
+
+Note: org quota is shared across ALL projects — usage in another project
+(including GPU VM flavors in evroc-compute) consumes the same GPU limit.

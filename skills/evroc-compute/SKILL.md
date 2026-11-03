@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.2"
+  version: "1.5"
   category: infrastructure
 allowed-tools: terminal, read_file
 ---
@@ -35,6 +35,22 @@ Ensure the evroc CLI is installed:
 ```bash
 bash scripts/check-cli.sh
 ```
+
+CLI upgrade confirmation: `check-cli.sh` also runs `evroc upgrade --dry-run` and
+prints "UPGRADE AVAILABLE" when a newer CLI release exists. Upgrading replaces
+the binary mid-session, so it requires explicit user consent.
+
+HALT: If check-cli.sh (or any command output) reports "UPGRADE AVAILABLE", you MUST:
+
+1. Show the user the dry-run report (current release, newer release, install path)
+2. Ask: "Upgrade the evroc CLI now? Type 'yes' to confirm."
+3. Wait for the user to explicitly type 'yes'
+
+Only then run `evroc upgrade` (it verifies checksums, backs up the previous
+binary, and rolls back automatically if the new binary fails its self-test).
+Do NOT run `evroc upgrade` without explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
+If the user declines, continue with the current CLI version.
 
 Then authenticate:
 
@@ -615,8 +631,44 @@ A silence or ambiguous response is NOT confirmation.
 evroc compute placementgroup delete my-pg --force
 ```
 
+## Quota errors (InsufficientQuota)
+
+VM `create`/`update` and disk `create` fail with HTTP 403 when the organization quota is exhausted. The API response contains `reason: "InsufficientQuota"` and the text `not enough quota to perform request` (e.g. for vCPUs, memory, block storage, or GPUs).
+
+Committed quotas are org-wide: current usage in ANY project of the organization counts against the same limit. A 403 on an empty project usually means another project consumed the quota.
+
+HALT: When a `create` or `update` command fails with HTTP 403 and a body containing
+"InsufficientQuota" (or the text "not enough quota to perform request"), you MUST:
+
+1. Run: `evroc quotas orgquotas get` (or `bash scripts/check-quota.sh <resource>` for compute fields)
+2. Report to the user VERBATIM which resource is at its limit, its current usage, and
+   its limit — e.g. "vCPUs: 250/250 used — at limit"
+3. State: "To request a quota increase, contact support@evroc.com"
+4. Do NOT retry the command or attempt to free other resources until the
+   user decides (delete unused resources from the same quota, reduce the
+   requested size, or contact support). A silence or ambiguous response
+   is NOT confirmation to retry.
+
+Quota resources for compute and where they surface:
+
+| Quota field | Consumed by | Check with |
+|---|---|---|
+| `compute.vCPUs` | Any VM flavor | `bash scripts/check-quota.sh vcpus [needed]` |
+| `compute.memory` | Any VM flavor | `bash scripts/check-quota.sh memory [needed_GB]` |
+| `compute.blockStorage` | Disks | `bash scripts/check-quota.sh blockstorage [needed_GB]` |
+| `compute.gpus.<model>` | GPU flavors / Think dedicated instances | `bash scripts/check-quota.sh gpus [needed]` |
+
+The numeric usage helper fields (`memoryInKiBs`, `blockStorageInMBs`) are what the checker compares on; the display strings ("932.5GB", "7.7TB") are shown as the API renders them. If the org has no GPU quota rows at all and `[needed]` is set, the checker exits 1 with "no GPU quota is configured".
+
 ## Pitfalls
 
+- **CLI upgrade, never silent**: `evroc upgrade` replaces the CLI binary. `check-cli.sh` reports
+  "UPGRADE AVAILABLE" via `evroc upgrade --dry-run` — the agent must ask the user and receive an
+  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Version flag trap:
+  the CLI reports its version with the `evroc version` subcommand (this always exists);
+  `evroc --version` and `evroc -v` do NOT exist on the CLI root. The only valid `--version` flag is
+  on the upgrade subcommand — `evroc upgrade --version <release-name>` installs exactly that named
+  published release (e.g. `--version 20261019-1792428909-root-3d363240`).
 - **Disk images — ask, don't guess**: There is no `disk image list` CLI command.
   For the live, current list, run:
   ```bash
@@ -689,6 +741,7 @@ evroc compute placementgroup delete my-pg --force
  
 
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
+- **Quota**: Run `bash scripts/check-quota.sh vcpus` (or `memory [GB]`, `blockstorage [GB]`, `gpus [N]`) to see real org quota usage. Quota is org-wide across all projects.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
 - **Subnet naming**: Pattern is `default-<region>-<zone>`. The zone in the subnet name must

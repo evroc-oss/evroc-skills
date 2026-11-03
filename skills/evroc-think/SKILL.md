@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.2"
+  version: "1.5"
   category: ai
 allowed-tools: terminal, read_file
 ---
@@ -40,6 +40,22 @@ Ensure the evroc CLI is installed:
 ```bash
 bash scripts/check-cli.sh
 ```
+
+CLI upgrade confirmation: `check-cli.sh` also runs `evroc upgrade --dry-run` and
+prints "UPGRADE AVAILABLE" when a newer CLI release exists. Upgrading replaces
+the binary mid-session, so it requires explicit user consent.
+
+HALT: If check-cli.sh (or any command output) reports "UPGRADE AVAILABLE", you MUST:
+
+1. Show the user the dry-run report (current release, newer release, install path)
+2. Ask: "Upgrade the evroc CLI now? Type 'yes' to confirm."
+3. Wait for the user to explicitly type 'yes'
+
+Only then run `evroc upgrade` (it verifies checksums, backs up the previous
+binary, and rolls back automatically if the new binary fails its self-test).
+Do NOT run `evroc upgrade` without explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
+If the user declines, continue with the current CLI version.
 
 Then authenticate:
 
@@ -257,8 +273,35 @@ curl -s -H "Authorization: Bearer ${TOKEN}" \
   "import sys,json; [print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
 
+## Quota errors (InsufficientQuota)
+
+Dedicated instance creation fails with HTTP 503 (or 403) when the organization's GPU quota is exhausted. The evroc-think service returns `status: 503, reason: InsufficientQuota` — note the status code differs from compute/networking (403), but the `reason` field is the same. Match on `reason: InsufficientQuota`, not the status code.
+
+Committed quotas are org-wide: current usage in ANY project of the organization counts against the same GPU limit. A 403/503 on an empty project usually means another project (or a GPU VM) consumed the GPU quota.
+
+Stopped instances may not consume quota immediately: a `--stopped` instance create can succeed even when the checker reports 0 GPUs available — quota is accounted when the instance starts. Do not tell the user they are blocked without trying (or asking whether to try) a `--stopped` create if a stopped instance is acceptable.
+
+HALT: When an `instance create` command fails with `reason: InsufficientQuota`
+(any HTTP status — 503 or 403), you MUST:
+
+1. Run: `bash scripts/check-quota.sh gpus` (or `evroc quotas orgquotas get`)
+2. Report to the user VERBATIM: for each GPU model, current usage and limit — e.g.
+   "GPUs B200: 2/2 used — at limit"
+3. State: "To request a quota increase, contact support@evroc.com"
+4. Do NOT retry the command until the user decides (stop/delete unused dedicated
+   instances via evroc-compute, reduce the instance size, create with `--stopped`
+   if a stopped instance is acceptable, or contact support).
+   A silence or ambiguous response is NOT confirmation to retry.
+
 ## Pitfalls
 
+- **CLI upgrade, never silent**: `evroc upgrade` replaces the CLI binary. `check-cli.sh` reports
+  "UPGRADE AVAILABLE" via `evroc upgrade --dry-run` — the agent must ask the user and receive an
+  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Version flag trap:
+  the CLI reports its version with the `evroc version` subcommand (this always exists);
+  `evroc --version` and `evroc -v` do NOT exist on the CLI root. The only valid `--version` flag is
+  on the upgrade subcommand — `evroc upgrade --version <release-name>` installs exactly that named
+  published release (e.g. `--version 20261019-1792428909-root-3d363240`).
 - **Dedicated vs shared**: Shared models are zero-deployment. Dedicated instances
   require choosing a model and size, then waiting for deployment.
 - **Model IDs use dashed format** matching `evroc think model list` output: e.g. `openai-gpt-oss-120b`,
@@ -272,5 +315,12 @@ curl -s -H "Authorization: Bearer ${TOKEN}" \
   `evroc think apikey list` after to see what was created.
 - **OpenAI API compatibility**: Endpoints follow OpenAI format.
   Any OpenAI-compatible client works.
+- **Dedicated instances consume org GPU quota**: GPU-backed dedicated instances count against
+  `compute.gpus.<model>` in the org quota, shared with GPU VM flavors. Check real availability with
+  `bash scripts/check-quota.sh gpus` or `evroc quotas orgquotas get` before creating.
+  Quota errors from the think service come back as HTTP 503 `InsufficientQuota` (not 403 like
+  compute/networking) — match on the `reason` field, not the status code.
+  A `--stopped` instance create can succeed even when quota shows 0 available;
+  quota is accounted when the instance starts.
 - **CLI aliases**: `mi` for `modelinstance`/`instance`, `ls` for `list`,
   `rm`/`del` for `delete`, `new` for `create`.
