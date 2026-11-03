@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux. This is a beta service — syntax may change between releases. First terraform init downloads the evroc provider from registry.terraform.io (~20 MB)."
 metadata:
   author: evroc
-  version: "1.3"
+  version: "1.4"
   category: networking
 allowed-tools: terminal, read_file
 ---
@@ -194,7 +194,8 @@ HALT: When a `create` command fails with HTTP 403 and a body containing
    "Load Balancers: 40/40 used — at limit"
 3. State: "To request a quota increase, contact support@evroc.com"
 4. Do NOT retry the command until the user decides (delete unused load balancers
-   top-down: listener → load balancer → route → service → pool, or contact support).
+   top-down following the resource hierarchy: load balancer → listener → L4 route →
+   backend service → backend pool, or contact support).
    A silence or ambiguous response is NOT confirmation to retry.
 
 ## Pitfalls

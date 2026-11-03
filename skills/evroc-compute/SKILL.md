@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.3"
+  version: "1.4"
   category: infrastructure
 allowed-tools: terminal, read_file
 ---
@@ -638,9 +638,11 @@ Quota resources for compute and where they surface:
 | Quota field | Consumed by | Check with |
 |---|---|---|
 | `compute.vCPUs` | Any VM flavor | `bash scripts/check-quota.sh vcpus [needed]` |
-| `compute.memory` | Any VM flavor | `bash scripts/check-quota.sh memory` |
-| `compute.blockStorage` | Disks | `bash scripts/check-quota.sh blockstorage` |
+| `compute.memory` | Any VM flavor | `bash scripts/check-quota.sh memory [needed_GB]` |
+| `compute.blockStorage` | Disks | `bash scripts/check-quota.sh blockstorage [needed_GB]` |
 | `compute.gpus.<model>` | GPU flavors / Think dedicated instances | `bash scripts/check-quota.sh gpus [needed]` |
+
+The numeric usage helper fields (`memoryInKiBs`, `blockStorageInMBs`) are what the checker compares on; the display strings ("932.5GB", "7.7TB") are shown as the API renders them. If the org has no GPU quota rows at all and `[needed]` is set, the checker exits 1 with "no GPU quota is configured".
 
 ## Pitfalls
 
@@ -716,7 +718,7 @@ Quota resources for compute and where they surface:
  
 
 - **Disk before VM**: Always create the boot disk first. The VM references it by name.
-- **Quota**: Run `bash scripts/check-quota.sh vcpus` (or `memory`, `blockstorage`, `gpus`) to see real org quota usage. Quota is org-wide across all projects.
+- **Quota**: Run `bash scripts/check-quota.sh vcpus` (or `memory [GB]`, `blockstorage [GB]`, `gpus [N]`) to see real org quota usage. Quota is org-wide across all projects.
 - **Boot-from flag**: Every disk attachment must specify `--boot-from` (`true` for boot,
   `false` for data).
 - **Subnet naming**: Pattern is `default-<region>-<zone>`. The zone in the subnet name must

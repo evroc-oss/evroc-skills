@@ -29,6 +29,7 @@ fi
 evroc quotas orgquotas get 2>/dev/null || true
 
 any_ok=0
+rows=0
 case "${RESOURCE}" in
     "")
         exit 0
@@ -37,6 +38,7 @@ case "${RESOURCE}" in
         echo "GPUs:"
         # union of models in quota spec and usage; one row each (limit, usage)
         while IFS=$'\t' read -r model lim used; do
+            rows=$(( rows + 1 ))
             avail=$(( lim - used ))
             echo "  ${model}: ${used} used, ${avail} available"
             if [[ -n "${NEEDED}" ]] && (( avail >= NEEDED )); then
@@ -50,10 +52,17 @@ case "${RESOURCE}" in
                 ($root.spec.quotas.compute.gpus[$m] // 0),
                 ($root.status.quotaUsage.compute.gpus[$m] // 0) ]
             | @tsv' <<<"${DATA}")
-        if [[ -n "${NEEDED}" ]] && (( any_ok == 0 )); then
-            echo "Error: need ${NEEDED} GPUs, but every model with quota is exhausted." >&2
-            echo "To request a quota increase, contact support@evroc.com" >&2
-            exit 1
+        if [[ -n "${NEEDED}" ]]; then
+            if (( rows == 0 )); then
+                echo "Error: need ${NEEDED} GPUs, but no GPU quota is configured for this organization." >&2
+                echo "To request a GPU quota, contact support@evroc.com" >&2
+                exit 1
+            fi
+            if (( any_ok == 0 )); then
+                echo "Error: need ${NEEDED} GPUs, but every model with quota is exhausted." >&2
+                echo "To request a quota increase, contact support@evroc.com" >&2
+                exit 1
+            fi
         fi
         ;;
     *)

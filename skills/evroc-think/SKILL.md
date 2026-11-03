@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.3"
+  version: "1.4"
   category: ai
 allowed-tools: terminal, read_file
 ---
@@ -259,19 +259,22 @@ curl -s -H "Authorization: Bearer ${TOKEN}" \
 
 ## Quota errors (InsufficientQuota)
 
-Dedicated instance creation fails with HTTP 403 when the organization's GPU quota is exhausted. The API response contains `reason: "InsufficientQuota"` and the text `not enough quota to perform request`.
+Dedicated instance creation fails with HTTP 503 (or 403) when the organization's GPU quota is exhausted. The evroc-think service returns `status: 503, reason: InsufficientQuota` — note the status code differs from compute/networking (403), but the `reason` field is the same. Match on `reason: InsufficientQuota`, not the status code.
 
-Committed quotas are org-wide: current usage in ANY project of the organization counts against the same GPU limit. A 403 on an empty project usually means another project (or a GPU VM) consumed the GPU quota.
+Committed quotas are org-wide: current usage in ANY project of the organization counts against the same GPU limit. A 403/503 on an empty project usually means another project (or a GPU VM) consumed the GPU quota.
 
-HALT: When an `instance create` command fails with HTTP 403 and a body containing
-"InsufficientQuota" (or the text "not enough quota to perform request"), you MUST:
+Stopped instances may not consume quota immediately: a `--stopped` instance create can succeed even when the checker reports 0 GPUs available — quota is accounted when the instance starts. Do not tell the user they are blocked without trying (or asking whether to try) a `--stopped` create if a stopped instance is acceptable.
+
+HALT: When an `instance create` command fails with `reason: InsufficientQuota`
+(any HTTP status — 503 or 403), you MUST:
 
 1. Run: `bash scripts/check-quota.sh gpus` (or `evroc quotas orgquotas get`)
 2. Report to the user VERBATIM: for each GPU model, current usage and limit — e.g.
    "GPUs B200: 2/2 used — at limit"
 3. State: "To request a quota increase, contact support@evroc.com"
 4. Do NOT retry the command until the user decides (stop/delete unused dedicated
-   instances via evroc-compute, reduce the instance size, or contact support).
+   instances via evroc-compute, reduce the instance size, create with `--stopped`
+   if a stopped instance is acceptable, or contact support).
    A silence or ambiguous response is NOT confirmation to retry.
 
 ## Pitfalls
@@ -292,5 +295,9 @@ HALT: When an `instance create` command fails with HTTP 403 and a body containin
 - **Dedicated instances consume org GPU quota**: GPU-backed dedicated instances count against
   `compute.gpus.<model>` in the org quota, shared with GPU VM flavors. Check real availability with
   `bash scripts/check-quota.sh gpus` or `evroc quotas orgquotas get` before creating.
+  Quota errors from the think service come back as HTTP 503 `InsufficientQuota` (not 403 like
+  compute/networking) — match on the `reason` field, not the status code.
+  A `--stopped` instance create can succeed even when quota shows 0 available;
+  quota is accounted when the instance starts.
 - **CLI aliases**: `mi` for `modelinstance`/`instance`, `ls` for `list`,
   `rm`/`del` for `delete`, `new` for `create`.

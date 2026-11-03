@@ -82,10 +82,22 @@ case "${RESOURCE}" in
         ;;
     size)
         LIMIT_STR=$(jq -r '(.spec.objectStorage.totalSize // "")' <<<"${DATA}")
-        # status may be empty ({}); try common usage fields, fall back to 0
+        # The quota API currently reports status: {} for project quotas —
+        # real-time usage is NOT exposed (the CLI table shows "Current: -").
+        # Fall back to listing bucket sizes is not possible via CLI; report
+        # honestly instead of guessing "0 used".
         USAGE_STR=$(jq -r '
             (.status.quotaUsage.objectStorage.totalSize //
-             .status.objectStorage.totalSize // "0")' <<<"${DATA}")
+             .status.objectStorage.totalSize // "")' <<<"${DATA}")
+
+        if [[ -z "${USAGE_STR}" ]]; then
+            echo "Object Storage (project): usage not reported by the quota API (limit ${LIMIT_STR:-unknown})"
+            if [[ -n "${NEEDED}" ]]; then
+                echo "Cannot verify whether ${NEEDED}GB fits — usage is not exposed by the API."
+                echo "The limit is ${LIMIT_STR}. Only the S3 proxy enforces the real total (writes fail with QuotaExceeded)."
+            fi
+            exit 0
+        fi
 
         to_mb "${LIMIT_STR}" LIMIT_MB
         to_mb "${USAGE_STR}" USAGE_MB

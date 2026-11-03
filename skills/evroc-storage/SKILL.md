@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.3"
+  version: "1.4"
   category: infrastructure
 allowed-tools: terminal, read_file
 ---
@@ -247,14 +247,16 @@ evroc storage bucketserviceaccount delete my-sa --force
 
 Object storage is limited by a PROJECT quota (`spec.objectStorage.totalSize`), unlike other services which use org quotas. Writes beyond the total size limit fail — the S3 proxy returns `QuotaExceeded` on object PUTs, and bucket/file store limits reject with HTTP 403 containing `reason: "InsufficientQuota"` and the text `not enough quota to perform request`.
 
+IMPORTANT: the quota API does not report current object-storage usage — `evroc quotas projectquotas get` returns an empty `status` (the CLI table shows "Current: -"). `check-quota.sh` therefore shows the limit only and cannot verify whether N GB fit; the S3 proxy enforces the real total at write time.
+
 HALT: When a bucket write fails with `QuotaExceeded` or a `create` command fails
 with HTTP 403 and a body containing "InsufficientQuota" (or the text
 "not enough quota to perform request"), you MUST:
 
 1. Run: `bash scripts/check-quota.sh size` (or `evroc quotas projectquotas get`)
    — note: project quota, not `evroc quotas orgquotas get`
-2. Report to the user VERBATIM: current object storage usage and limit — e.g.
-   "Object Storage: 10TB/10TB used — at limit"
+2. Report to the user VERBATIM: the project object storage limit (usage is not
+   exposed by the API) — e.g. "Object Storage limit: 10TB (usage not reported)"
 3. State: "To request a quota increase, contact support@evroc.com"
 4. Do NOT retry the write or attempt workarounds until the user decides (delete
    unneeded objects/buckets, or contact support). A silence or ambiguous
@@ -277,9 +279,11 @@ with HTTP 403 and a body containing "InsufficientQuota" (or the text
   subcommand for adding/removing labels:
   `evroc storage <resource> label <name> --add key=value --remove key`.
   See [`references/cli-reference.md`](references/cli-reference.md) for details.
-- **Object storage quota is project-scoped**: Check real usage with
+- **Object storage quota is project-scoped**: Check the limit with
   `evroc quotas projectquotas get` (hidden but works) or
-  `bash scripts/check-quota.sh size`. S3 PUTs beyond the limit fail with
-  `QuotaExceeded`. To request an increase, contact support@evroc.com.
+  `bash scripts/check-quota.sh size`. Usage is NOT reported by the quota API
+  (empty `status`), so the script shows the limit only. S3 PUTs beyond the
+  limit fail with `QuotaExceeded`. To request an increase, contact
+  support@evroc.com.
 - **CLI aliases**: `bu` for `bucket`, `fs` for `filestore`, `bsa` for
   `bucketserviceaccount`, `ls` for `list`, `rm`/`del` for `delete`, `new` for `create`.
