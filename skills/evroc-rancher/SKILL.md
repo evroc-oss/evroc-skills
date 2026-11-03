@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires Terraform, evroc CLI authenticated with evroc login, curl, git, jq, and SSH. macOS or Linux. evroc account needs at least 2 free public IPs (3-IP quota). On first run, terraform init downloads the evroc provider binary (~20 MB) from registry.terraform.io."
 metadata:
   author: evroc
-  version: "1.3"
+  version: "1.4"
   category: orchestration
 allowed-tools: terminal, read_file
 ---
@@ -44,6 +44,12 @@ the user must do.
 **Note:** On first run, `terraform init` downloads the evroc Terraform provider
 (~20 MB) from `registry.terraform.io`. This requires network access. Subsequent
 runs use the local plugin cache.
+
+CLI upgrade confirmation: if any command output reports "UPGRADE AVAILABLE"
+(the evroc CLI has a newer release), ask the user first: show the
+`evroc upgrade --dry-run` report and "Upgrade the evroc CLI now? Type 'yes'
+to confirm." Only run `evroc upgrade` after an explicit 'yes'.
+A silence or ambiguous response is NOT confirmation.
 
 ## Operations
 
@@ -167,6 +173,11 @@ into the work directory at deploy time:
 
 ## Pitfalls
 
+- **CLI upgrade, never silent**: `evroc upgrade` replaces the CLI binary. `check-cli.sh` reports
+  "UPGRADE AVAILABLE" via `evroc upgrade --dry-run` — the agent must ask the user and receive an
+  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Note the flag trap:
+  `evroc --version` does not exist (use the `evroc version` subcommand), but
+  `evroc upgrade --version <release-name>` IS a valid flag that installs exactly that named release.
 - **Public IP quota**: The public IP quota is org-level (commonly 3 by default, raisable).
   The deployment needs 1 IP for the Rancher server + 1 IP per workload node. Run
   `bash scripts/check-public-ip-quota.sh <needed>` before deploying (or use the

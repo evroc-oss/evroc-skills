@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.2"
+  version: "1.3"
   category: networking
 allowed-tools: terminal, read_file
 ---
@@ -40,6 +40,22 @@ Ensure the evroc CLI is installed:
 ```bash
 bash scripts/check-cli.sh
 ```
+
+CLI upgrade confirmation: `check-cli.sh` also runs `evroc upgrade --dry-run` and
+prints "UPGRADE AVAILABLE" when a newer CLI release exists. Upgrading replaces
+the binary mid-session, so it requires explicit user consent.
+
+HALT: If check-cli.sh (or any command output) reports "UPGRADE AVAILABLE", you MUST:
+
+1. Show the user the dry-run report (current release, newer release, install path)
+2. Ask: "Upgrade the evroc CLI now? Type 'yes' to confirm."
+3. Wait for the user to explicitly type 'yes'
+
+Only then run `evroc upgrade` (it verifies checksums, backs up the previous
+binary, and rolls back automatically if the new binary fails its self-test).
+Do NOT run `evroc upgrade` without explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
+If the user declines, continue with the current CLI version.
 
 Then authenticate:
 
@@ -349,6 +365,11 @@ HALT: When a `create` command fails with HTTP 403 and a body containing
 
 ## Pitfalls
 
+- **CLI upgrade, never silent**: `evroc upgrade` replaces the CLI binary. `check-cli.sh` reports
+  "UPGRADE AVAILABLE" via `evroc upgrade --dry-run` — the agent must ask the user and receive an
+  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Note the flag trap:
+  `evroc --version` does not exist (use the `evroc version` subcommand), but
+  `evroc upgrade --version <release-name>` IS a valid flag that installs exactly that named release.
 - **Default-deny model**: evroc security groups block all traffic not explicitly
   allowed. If a VM can't be reached, check the security group rules (not just the VM).
 - **Subnet naming**: Default subnets follow `default-<region>-<zone>` (e.g.
