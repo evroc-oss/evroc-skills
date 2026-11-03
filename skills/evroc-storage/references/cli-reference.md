@@ -69,6 +69,7 @@ Aliases: copy, cp
 |---|---|---|
 | `-f, --from` | string | Source: local file or `bucket://<bucket>/<object>`. |
 | `-t, --to` | string | Destination: local file or `bucket://<bucket>/<object>`. |
+| `--max-concurrent-requests` | int | Maximum number of concurrent requests (default: 5). |
 | `--s3-credentials` | string | Path to S3 credentials file (default: `~/.evroc/credentials.ini`). |
 
 ### evroc storage bucket get-s3-credentials
@@ -249,6 +250,111 @@ Manages secrets for bucket service accounts. Subcommand: `get`.
 ```
 evroc storage bucketserviceaccountsecret get <name> [flags]
 ```
+
+## KMS (Key Management)
+
+Full flag reference for `evroc kms` key management commands. Key lifecycle:
+`create` → (`rotate` \| `import-rotate`) → `suspend`/`activate` → `trim` → `delete`.
+Delete and trim are two-phase operations with a grace period; each has an
+`-abort` subcommand that reverses the operation while pending.
+
+### evroc kms keys create
+
+```
+evroc kms keys create <key_id> [flags]
+Aliases: create, new
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--algorithm` | string | Kind of key to create (default: `aes256-gcm96`). |
+| `--auto-rotate-days` | int32 | Auto-rotate key versions at this interval in days (default: `-1`, disabled). |
+| `--expiration-days` | int32 | Expire key versions after this period in days (default: `-1`, disabled). |
+| `--imported` | bool | Create a key for importing key material (see `import`). |
+
+### evroc kms keys list / get
+
+```
+evroc kms keys list [flags]
+Aliases: list, ls
+evroc kms keys get <key_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-l, --label-selector` | string | Kubernetes-style label selector (list only). |
+| `-o, --out` | string | Output: `list` (default on list), `yaml` (default on get), `json`. |
+
+### evroc kms keys rotate
+
+Generates a new key version that becomes the default. Previous versions remain
+valid until trimmed.
+
+```
+evroc kms keys rotate <key_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts and execute destructive actions. |
+
+### evroc kms keys import / import-rotate
+
+Import key material into a key that was created with `--imported`. Material is
+wrapped locally with an ephemeral data key — plaintext never leaves the machine.
+`import-rotate` rotates an imported key by importing new material.
+
+```
+evroc kms keys import <key_id> [flags]
+evroc kms keys import-rotate <key_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts (`import-rotate` only). |
+| `--path` | string | Path to the raw key material to import. |
+
+### evroc kms keys suspend / activate
+
+```
+evroc kms keys suspend <key_id> [flags]
+evroc kms keys activate <key_id> [flags]
+```
+
+`suspend` makes the key unusable (reversible — `activate` restores it; keys may
+also be `activate`d when pre-activated).
+
+### evroc kms keys trim / trim-abort
+
+Trim suspends all versions below `--min-version-to-keep` immediately; they are
+permanently purged after a grace period. `trim-abort` re-activates versions that
+are still pending final trim. The latest/current version cannot be trimmed.
+
+```
+evroc kms keys trim <key_id> [flags]
+evroc kms keys trim-abort <key_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts (trim only). |
+| `--min-version-to-keep` | uint | Minimum version to keep (trim only, required). |
+
+### evroc kms keys delete / delete-abort
+
+Delete moves the key to "Pending Deletion" (unusable for encryption or
+decryption); the key is permanently deleted after a grace period. `delete-abort`
+restores a key that is still pending deletion.
+
+```
+evroc kms keys delete <key_id> [flags]
+Aliases: delete, del, rm
+evroc kms keys delete-abort <key_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts (delete only). |
 
 ## Object Retention Modes
 
