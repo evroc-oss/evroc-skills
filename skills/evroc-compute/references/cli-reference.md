@@ -21,9 +21,9 @@ Aliases: create, new
 | `--running` | bool | Whether the VM should be running (default: true). |
 | `--security-group` | strings | Security group name. Repeatable for multiple groups. |
 | `--ssh-authorized-key` | strings | Public key for SSH access. Repeatable for multiple keys. |
-| `--stack-type` | string | Network stack: `dual-stack`, `ipv6-only`, `ipv4-only`. |
+| `--stack-type` | string | Network stack: `dual-stack`, `ipv6-only`. `ipv4-only` is deprecated. |
 | `--subnet` | string | Name of subnet to attach VM to. |
-| `--vm-virtual-resources-ref` | string | Compute profile: `<series>.<size>` (e.g. `a1a.m`). |
+| `--compute-profile-ref` | string | Compute profile: `<series>.<size>` (e.g. `a1a.m`). `--vm-virtual-resources-ref` is a backwards-compatible alias. |
 | `--zone` | string | Zone. |
 
 ### evroc compute vm list
@@ -100,7 +100,8 @@ Aliases: create, new
 
 | Flag | Type | Description |
 |---|---|---|
-| `--image` | string | Name of the disk image. See [Available Disk Images](#available-disk-images) below. |
+| `--custom-image` | string | Name of a custom (user-uploaded) disk image. See [Custom Disk Images](#custom-disk-images) below. |
+| `--image` | string | Name of a platform-provided disk image. See [Available Disk Images](#available-disk-images) below. |
 | `--size-amount` | int | Size of disk in the related unit. |
 | `--size-unit` | string | One of `KB`, `MB`, `GB`, `TB`. |
 | `--snapshot` | string | Name of snapshot to create from. |
@@ -108,23 +109,30 @@ Aliases: create, new
 
 #### Available Disk Images
 
-The `--image` flag accepts these names only. There is no `disk image list` command — present these options to the user and let them choose.
+The `--image` flag accepts the platform catalog names below. The live,
+authoritative list is `evroc compute diskimage list` — present its output and
+let the user choose. (Check custom user-uploaded images with
+`evroc compute customdiskimage list` — those go to `--custom-image`, not `--image`.)
 
 | Image Name | Distro | Version | Default Size |
 |---|---|---|---|
+| `ubuntu-minimal.26-04.1` | Minimal Ubuntu | 26.04 | 5 GB |
 | `ubuntu-minimal.24-04.1` | Minimal Ubuntu | 24.04 | 5 GB |
+| `ubuntu.26-04.1` | Ubuntu | 26.04 | 50 GB |
 | `ubuntu.24-04.1` | Ubuntu | 24.04 | 50 GB |
 | `ubuntu.22-04.1` | Ubuntu | 22.04 | 50 GB |
 | `rocky.10-1.1` | Rocky Linux | 10.1 | 50 GB |
 | `rocky.9-6.1` | Rocky Linux | 9.6 | 50 GB |
 | `rocky.8-10.1` | Rocky Linux | 8.10 | 50 GB |
+| `opensuse.16-0.1` | openSUSE | 16.0 | 50 GB |
 | `opensuse.15-6.1` | openSUSE | 15.6 | 50 GB |
 | `opensuse.15-5.1` | openSUSE | 15.5 | 50 GB |
+| `sles.16-0.1` | SLES | 16.0 | not listed — verify with `diskimage get` |
 | `sles.15-6.1` | SLES | 15.6 | 50 GB |
 | `sles.15-5.1` | SLES | 15.5 | 50 GB |
 | `sl-micro.6-1.1` | SL Micro | 6.1 | 50 GB |
 
-> GPU VMs support Ubuntu 24.04 only.
+> GPU VMs only support Ubuntu 24.04 or custom disk images.
 
 Image name format: `<distro>.<version>.1` (dot before version, hyphen within version). Using wrong separators (e.g. `ubuntu-minimal-24.04.1`) silently creates a disk that never becomes Ready (`DiskImageInvalid`).
 
@@ -185,6 +193,98 @@ evroc compute disk label <name> [flags]
 |---|---|---|
 | `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
 | `-r, --remove` | strings | Label key to remove. Repeatable for multiple labels. |
+
+### evroc compute diskimage list
+
+Lists the platform-provided disk image catalog (the authoritative image list).
+
+```
+evroc compute diskimage list [flags]
+Aliases: list, ls
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-o, --out` | string | Output: `list` (default), `yaml`, `json`. |
+
+`evroc compute diskimage get <image-name>` returns full details for one image
+(`-o yaml|json|list`, default `yaml`).
+
+## Custom Disk Images
+
+Custom disk images are user-uploaded OS images stored as objects in an evroc
+storage bucket. Register them with `evroc compute customdiskimage` and reference
+them via `--custom-image` on `evroc compute disk create` (NOT `--image`, which
+is reserved for the platform catalog above).
+
+### evroc compute customdiskimage create
+
+```
+evroc compute customdiskimage create <image_id> [flags]
+Aliases: create, new
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--architecture` | string | Image architecture: `amd64`. |
+| `--bucket` | string | Name of the bucket where the image is stored. |
+| `--description` | string | Optional description. |
+| `--image-version` | string | Optional image version. |
+| `--os-name` | string | Optional OS name. |
+| `--os-version` | string | Optional OS version. |
+| `--path` | string | Path of the image in the bucket. |
+| `--service-account` | string | Service account name for accessing the bucket. |
+| `--size-amount` | int32 | Default disk size amount. |
+| `--size-unit` | string | Default disk size unit: `KB`, `MB`, `GB`, `TB`. |
+| `--version` | string | Image version to use (defaults to latest). |
+
+### evroc compute customdiskimage list / get
+
+```
+evroc compute customdiskimage list [flags]
+evroc compute customdiskimage get <image_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-l, --label-selector` | string | Kubernetes-style label selector (list only). |
+| `-o, --out` | string | Output: `list` (default on list), `yaml` (default on get), `json`. |
+
+### evroc compute customdiskimage update
+
+```
+evroc compute customdiskimage update <image_id> [flags]
+Aliases: update, u
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--description` | string | Optional description. |
+| `--image-version` | string | Optional image version. |
+| `--os-name` | string | Optional OS name. |
+| `--os-version` | string | Optional OS version. |
+
+### evroc compute customdiskimage label
+
+```
+evroc compute customdiskimage label <image_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-a, --add` | stringToString | Label to add (e.g. `key=value`). Default `[]`. |
+| `-r, --remove` | strings | Label key to remove. Repeatable. |
+
+### evroc compute customdiskimage delete
+
+```
+evroc compute customdiskimage delete <image_id> [flags]
+Aliases: delete, del, rm
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
 
 ## Hotswap Disk Attachments
 
@@ -380,7 +480,7 @@ evroc compute placementgroup label <name> [flags]
 
 ## Compute Profile Format
 
-Compute profiles (`--vm-virtual-resources-ref`) use the format `<series>.<size>`:
+Compute profiles (`--compute-profile-ref`) use the format `<series>.<size>`:
 
 | Series | Type | Sizes |
 |---|---|---|
@@ -390,4 +490,9 @@ Compute profiles (`--vm-virtual-resources-ref`) use the format `<series>.<size>`
 
 Example: `a1a.m` = general purpose, medium size.
 
-See the [evroc compute documentation](https://docs.evroc.com/products/compute/index.html) for the authoritative list of supported profiles.
+`--vm-virtual-resources-ref` is accepted as a backwards-compatible alias for
+`--compute-profile-ref`.
+
+For the authoritative list of supported profiles, run
+`evroc compute computeprofile list` (and `evroc compute computeprofile get
+<profile>` for details). See also the [evroc compute documentation](https://docs.evroc.com/products/compute/index.html).

@@ -239,6 +239,7 @@ evroc loadbalancer backendservice sethealthcheckhttp <name> [flags]
 
 | Flag | Type | Description |
 |---|---|---|
+| `--disable-proxy-protocol` | bool | Omit Proxy Protocol headers from health check connections. |
 | `--expected-statuses` | uints | HTTP status codes considered healthy (repeatable). Default `[]`. |
 | `--healthy-threshold` | uint32 | Successes required to mark healthy. |
 | `--host` | string | HTTP Host header value. |
@@ -257,6 +258,7 @@ evroc loadbalancer backendservice sethealthchecktcp <name> [flags]
 
 | Flag | Type | Description |
 |---|---|---|
+| `--disable-proxy-protocol` | bool | Omit Proxy Protocol headers from health check connections. |
 | `--healthy-threshold` | uint32 | Successes required to mark healthy. |
 | `--interval` | duration | Time between checks. |
 | `--receive` | string | Expected response payload. |

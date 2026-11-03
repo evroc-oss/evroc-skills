@@ -1,11 +1,11 @@
 ---
 name: evroc-iam
-description: "Use when the user wants to create, list, inspect, or delete evroc projects; grant or revoke role bindings; manage service accounts and their credentials (including rs256-jwt and hmac-sigv4 credential types); enable or disable service accounts; or retrieve an access token. Requires the evroc CLI. Do NOT trigger for compute, networking, storage, or Think model tasks."
+description: "Use when the user wants to create, list, inspect, or delete evroc projects; grant or revoke role bindings; manage service accounts and their credentials (including rs256-jwt and hmac-sigv4 credential types); enable or disable service accounts; retrieve an access token; or manage organization users and invitations (list, invite, resend, revoke, remove). Requires the evroc CLI. Do NOT trigger for compute, networking, storage (including buckets and KMS keys), or Think model tasks."
 license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.3"
+  version: "1.4"
   category: security
 allowed-tools: terminal, read_file
 ---
@@ -13,7 +13,8 @@ allowed-tools: terminal, read_file
 # evroc-iam
 
 Manage evroc Identity and Access Management through the `evroc iam` CLI.
-Covers projects, role bindings, service accounts, and credentials.
+Covers projects, role bindings, service accounts, and credentials, plus
+organization users and invitations via `evroc usersmanagement`.
 
 evroc IAM uses a principal-role-permission model: predefined roles (collections of
 permissions) are granted to principals (users or service accounts) on a scope
@@ -29,7 +30,9 @@ Read the full CLI reference when needed: [`references/cli-reference.md`](referen
 - User wants to enable or disable a service account
 - User wants to list available roles or check permissions
 - User wants to retrieve an access token for API calls
-- User mentions "evroc" with "IAM", "project", "role", "permission", "service account", or "access"
+- User wants to list, invite, remove, or manage organization users
+- User wants to create or revoke an organization invitation
+- User mentions "evroc" with "IAM", "project", "role", "permission", "service account", "access", "user", "member", or "invitation"
 
 **Do NOT use for:** compute VMs, networking (public IPs, security groups, subnets, VPCs), storage buckets, load balancers, or Think models.
 
@@ -321,9 +324,10 @@ Credential expiration is mandatory: minimum 24 hours, maximum 2 years. You
 can't change the expiration after the credential is created.
 
 For `rs256-jwt` credentials, the access token lifetime is separate from the
-credential expiration. The default is 300 seconds (5 minutes), with a minimum of
-60 seconds and a maximum of 28800 seconds (8 hours). This is set at credential
-creation.
+credential expiration: the short-lived access token expires automatically and
+the workload must request a new one. The `--access-token-lifetime` flag no
+longer exists on `credential create` — the API controls the access token
+lifetime.
 
 #### List credentials
 
@@ -397,6 +401,97 @@ A silence or ambiguous response is NOT confirmation.
 evroc iam serviceaccount delete my-sa --force
 ```
 
+## Organization Users and Invitations
+
+Organization members are managed through the `evroc usersmanagement` command
+group (alias `um`; the same commands also exist under `evroc iam usersmanagement`).
+Managing members requires the `/iam/roles/organizationOwner` or
+`/iam/roles/organizationAccessAdministrator` organization role.
+
+### List users
+
+```bash
+evroc usersmanagement user list
+```
+
+The output includes user IDs — these are the IDs used in role binding
+principals and in user removal. Find them here rather than in the Console.
+
+### Invite a user
+
+```bash
+evroc usersmanagement invitation create --email someone@example.com
+```
+
+You can invite users who don't yet have an evroc account. Users who accept
+become members with the `/iam/roles/organizationViewer` role — grant further
+roles via role bindings afterwards.
+
+### List or inspect invitations
+
+```bash
+evroc usersmanagement invitation list
+evroc usersmanagement invitation send <invitation-id>    # resend the email
+evroc usersmanagement invitation events <invitation-id>  # event history
+```
+
+Invitation statuses: `Created`, `Sent`, `Accepted`, `Revoked`, `Expired`.
+
+### Revoke an invitation
+
+HALT: Before running ANY `evroc usersmanagement invitation revoke` command, you MUST output
+this message to the user VERBATIM before doing anything else:
+
+"This will permanently revoke the Invitation '<invitation-id>' and cannot
+be undone."
+
+Then:
+1. List the specific invitation(s) that will be revoked (ID, email, status)
+2. Ask the user to confirm: "Type 'yes' to confirm revocation of '<invitation-id>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the revoke command until the user explicitly confirms.
+A silence or ambiguous response is NOT confirmation.
+
+```bash
+evroc usersmanagement invitation revoke <invitation-id> --force
+```
+
+**Completion criterion:** `evroc usersmanagement invitation events <invitation-id>`
+shows the `Revoked` event.
+
+### Remove a user
+
+HALT: Before running ANY `evroc usersmanagement user remove` command, you MUST output
+this message to the user VERBATIM before doing anything else:
+
+"This will permanently remove the User '<user-id>' from the organization and
+cannot be undone. Removing a user also deletes all of their role bindings."
+
+Then:
+1. List the specific user(s) that will be removed (user ID, name/email, org)
+2. Ask the user to confirm: "Type 'yes' to confirm removal of '<user-id>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the remove command until the user explicitly confirms.
+A silence or ambiguous response is NOT confirmation.
+
+```bash
+evroc usersmanagement user remove <user-id> --force
+```
+
+**Completion criterion:** `evroc usersmanagement user list` no longer shows
+the user.
+
+### Account self-service (current user only)
+
+```bash
+evroc usersmanagement account reset-password
+evroc usersmanagement account reset-mfa
+```
+
+These act on the CURRENT user's own account, not on other members.
+
 ## Access Tokens
 
 ```bash
@@ -440,9 +535,13 @@ Run `evroc iam rb roles` for the complete list.
 - **Credential expiry is immutable**: Min 24 hours, max 2 years. You can't
   change the expiration after creation — create a new credential instead.
 - **Access token lifetime is separate from credential expiry**: For `rs256-jwt`
-  credentials, the short-lived access token expires (default 300s, range
-  60s–28800s) and the workload must request a new one. This is independent of
-  the credential's own expiration.
+  credentials, the short-lived access token expires on its own schedule and the
+  workload must request a new one. This is independent of the credential's own
+  expiration. NOTE: `--access-token-lifetime` was removed from
+  `evroc iam serviceaccount credential create` — it is not a valid flag.
+- **Users management lives under `evroc usersmanagement`** (alias `um`, also
+  reachable as `evroc iam usersmanagement`) — not under `evroc iam project` or
+  `rolebinding`.
 - **Service accounts are project-scoped**: A service account belongs to exactly
   one project and its FQID includes that project
   (`/iam/projects/<project-id>/serviceAccounts/<sa-id>`). It can't be shared

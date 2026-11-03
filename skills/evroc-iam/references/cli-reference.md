@@ -223,8 +223,7 @@ Aliases: create, new
 
 | Flag | Type | Description |
 |---|---|---|
-| `--access-token-lifetime` | duration | Access token lifetime for `rs256-jwt` credentials (default: `300s`, min: `60s`, max: `28800s`). |
-| `--expires-in` | duration | Duration until credential expiry (default: `8760h` = 1 year; min: `24h`, max: `17520h`). Immutable after creation. |
+| `--expires-in` | duration | Duration until the credential expires (default: `8760h` = 1 year; min: `24h`, max: `17520h`). Immutable after creation. |
 | `--service-account` | string | Service account ID (required). |
 | `--type` | string | Credential type: `rs256-jwt` (default, evroc public API) or `hmac-sigv4` (S3 compatible API). |
 
@@ -275,6 +274,100 @@ Aliases: delete, del, rm
 |---|---|---|
 | `--force` | bool | Skip interactive prompts. |
 | `--service-account` | string | Service account ID (required). |
+
+## Users Management
+
+Organization member management. Runs as top-level `evroc usersmanagement`
+(alias `um`) or, equivalently, as `evroc iam usersmanagement`. Requires the
+`/iam/roles/organizationOwner` or `/iam/roles/organizationAccessAdministrator`
+role.
+
+### evroc usersmanagement user list
+
+```
+evroc usersmanagement user list [flags]
+Aliases: list, ls
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-o, --out` | string | Output: `table` (default), `yaml`, `json`. |
+
+### evroc usersmanagement user remove
+
+```
+evroc usersmanagement user remove <user_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
+Removing a user also deletes all of their role bindings.
+
+### evroc usersmanagement invitation create
+
+```
+evroc usersmanagement invitation create [flags]
+Aliases: create, new
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--email` | string | Email of the user to invite (required). |
+
+### evroc usersmanagement invitation list
+
+```
+evroc usersmanagement invitation list [flags]
+Aliases: list, ls
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-o, --out` | string | Output: `table` (default), `yaml`, `json`. |
+
+### evroc usersmanagement invitation events
+
+```
+evroc usersmanagement invitation events <invitation_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `-o, --out` | string | Output: `table` (default), `yaml`, `json`. |
+
+### evroc usersmanagement invitation send
+
+Resends the invitation email. Takes no flags.
+
+```
+evroc usersmanagement invitation send <invitation_id> [flags]
+```
+
+### evroc usersmanagement invitation revoke
+
+```
+evroc usersmanagement invitation revoke <invitation_id> [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
+
+### evroc usersmanagement account reset-password / reset-mfa
+
+Self-service commands for the CURRENT user's own account (not organization
+members). Both take no positional arguments.
+
+```
+evroc usersmanagement account reset-password [flags]
+evroc usersmanagement account reset-mfa [flags]
+```
+
+| Flag | Type | Description |
+|---|---|---|
+| `--force` | bool | Skip interactive prompts. |
 
 ## Tokens and User Info
 

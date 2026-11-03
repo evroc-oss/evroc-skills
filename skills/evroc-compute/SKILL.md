@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
 metadata:
   author: evroc
-  version: "1.5"
+  version: "1.6"
   category: infrastructure
 allowed-tools: terminal, read_file
 ---
@@ -97,9 +97,12 @@ evroc compute vm get <vm-name> -o yaml
 Requires: a pre-existing boot disk, a flavor, a subnet, and a zone.
 
 **Before creating the boot disk, ask the user which OS image they want.**
-Available images are listed in [`references/cli-reference.md`](references/cli-reference.md#available-disk-images)
-(e.g. `ubuntu-minimal.24-04.1`, `ubuntu.24-04.1`, `rocky.9-6.1`). Do not guess —
-present the options and confirm the user's choice.
+List the live catalog with `evroc compute diskimage list` and present the
+options (e.g. `ubuntu-minimal.24-04.1`, `ubuntu.24-04.1`, `rocky.9-6.1`). Do
+not guess — confirm the user's choice. Per-image details:
+`evroc compute diskimage get <image-name>`. The offline cache in
+[`references/cli-reference.md`](references/cli-reference.md#available-disk-images)
+mirrors the catalog.
 
 ```bash
 # 1. Create boot disk (ask user which image — see references/cli-reference.md)
@@ -111,7 +114,7 @@ evroc compute disk create my-boot-disk \
 
 # 2. Create VM
 evroc compute vm create my-vm \
-  --vm-virtual-resources-ref=a1a.m \
+  --compute-profile-ref=a1a.m \
   --disk=my-boot-disk \
   --boot-from=true \
   --subnet=default-se-sto-a \
@@ -174,7 +177,7 @@ done
 
 ```bash
 evroc compute vm create my-vm \
-  --vm-virtual-resources-ref=a1a.m \
+  --compute-profile-ref=a1a.m \
   --disk=my-boot-disk \
   --boot-from=true \
   --subnet=default-se-sto-a \
@@ -483,6 +486,56 @@ evroc compute disk create my-disk \
   --zone=a
 ```
 
+### Custom disk images
+
+Users can register their own OS images (stored as objects in an evroc storage
+bucket) as custom disk images, then boot disks and VMs from them. Requires a
+storage bucket plus a bucket service account that can read the image object
+(see the **evroc-storage** skill).
+
+```bash
+# 1. Register the image from a bucket object
+evroc compute customdiskimage create my-image \
+  --bucket=my-bucket \
+  --path=path/to/image.qcow2 \
+  --service-account=my-bucket-sa \
+  --architecture=amd64 \
+  --size-amount=50 \
+  --size-unit=GB
+
+# 2. Create a disk from it — NOTE: --custom-image, NOT --image
+evroc compute disk create my-boot-disk \
+  --custom-image=my-image \
+  --size-amount=50 \
+  --size-unit=GB \
+  --zone=a
+```
+
+Manage the catalog with `evroc compute customdiskimage list`, `get`, `update`,
+and `label` — see [`references/cli-reference.md`](references/cli-reference.md).
+
+#### Delete a custom disk image
+
+HALT: Before running ANY `evroc compute customdiskimage delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
+
+"This will permanently delete the Custom Disk Image '<image-name>' and cannot
+be undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<image-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
+A silence or ambiguous response is NOT confirmation.
+
+```bash
+evroc compute customdiskimage delete my-image --force
+```
+
+**Completion criterion:** `evroc compute customdiskimage get my-image` returns `not found`.
+
 ### Delete a disk
 
 HALT: Before running ANY `evroc compute disk delete` command, you MUST output
@@ -603,7 +656,7 @@ evroc compute placementgroup list
 
 ```bash
 evroc compute vm create my-vm \
-  --vm-virtual-resources-ref=a1a.m \
+  --compute-profile-ref=a1a.m \
   --disk=my-boot-disk \
   --boot-from=true \
   --subnet=default-se-sto-a \
@@ -669,12 +722,9 @@ The numeric usage helper fields (`memoryInKiBs`, `blockStorageInMBs`) are what t
   `evroc --version` and `evroc -v` do NOT exist on the CLI root. The only valid `--version` flag is
   on the upgrade subcommand — `evroc upgrade --version <release-name>` installs exactly that named
   published release (e.g. `--version 20261019-1792428909-root-3d363240`).
-- **Disk images — ask, don't guess**: There is no `disk image list` CLI command.
-  For the live, current list, run:
-  ```bash
-  bash scripts/get-disk-images.sh
-  ```
-  This fetches from the API using your current `evroc login` token. The
+- **Disk images — ask, don't guess**: List the live catalog with
+  `evroc compute diskimage list` (the API-backed `bash scripts/get-disk-images.sh`
+  fetches the same catalog using your current `evroc login` token). The
   [`references/cli-reference.md`](references/cli-reference.md#available-disk-images)
   table is a cache — use it for offline reference or quick browsing only.
   Always have the user confirm their choice from the live list or cache.
