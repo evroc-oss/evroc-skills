@@ -81,6 +81,7 @@ Aliases: get-s3-credentials, s3-creds
 
 | Flag | Type | Description |
 |---|---|---|
+| `--duration` | duration | How long the S3 credentials are valid: 15m to 12h (default: `1h`). |
 | `--path` | string | Output path for credentials (default: `~/.evroc/credentials.ini`). |
 
 ### evroc storage bucket update
