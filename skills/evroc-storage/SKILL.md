@@ -112,9 +112,16 @@ evroc storage bucket get-s3-credentials
 
 # Custom path
 evroc storage bucket get-s3-credentials --path /tmp/s3-creds.ini
+
+# Credentials valid for 12 hours (default 1h, range 15m to 12h)
+evroc storage bucket get-s3-credentials --duration 12h
 ```
 
-Credentials are written to `~/.evroc/credentials.ini` by default.
+Credentials are written to `~/.evroc/credentials.ini` by default. They are
+valid for 1 hour by default — request a different lifetime with `--duration`
+(minimum 15 minutes, maximum 12 hours). Auto-rotating S3 clients pick up new
+credentials on expiry; re-run the command manually if a long-lived credential
+is about to lapse mid-operation.
 
 ### Copy objects
 
