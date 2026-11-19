@@ -30,3 +30,6 @@ npm-debug.log*
 # skillgrade eval output
 tests/.skillgrade-out/
 
+
+# Local agent scratch
+.hermes/
