@@ -1,0 +1,365 @@
+---
+name: evroc-think
+description: "Use when the user wants to deploy, start, stop, update, or delete evroc Think dedicated GPU model instances; list or use shared OpenAI-compatible models; create or manage Think API keys; or launch coding agents with Think as backend. Requires the evroc CLI. Do NOT trigger for bare compute VMs (evroc-compute), IAM tasks (evroc-iam), or non-evroc model providers."
+license: Apache-2.0
+compatibility: "Requires evroc CLI authenticated with evroc login. macOS or Linux."
+metadata:
+  author: evroc
+  version: "1.5"
+  category: ai
+allowed-tools: Read, Grep, Glob, LS
+---
+
+# evroc-think
+
+Manage evroc Think Models — a Model-as-a-Service inference platform hosting leading
+open-source AI models on NVIDIA H100 and B200 GPUs.
+
+Two modes of operation:
+1. **Shared Models** — managed by evroc, ready to use, OpenAI-compatible endpoints.
+2. **Dedicated Model Instances** — isolated GPU resources for a single model.
+
+Read the full CLI reference when needed: [`references/cli-reference.md`](references/cli-reference.md).
+
+## When to Use
+
+- User wants to create, list, inspect, start, stop, or delete a model instance
+- User wants to list available models or instance sizes
+- User wants to list or use shared models
+- User wants to create or manage API keys for Think endpoints
+- User wants to launch a coding agent (Claude Code, Codex, Hermes, OpenCode, Aider)
+  with Think as backend
+- User mentions "evroc" with "Think", "model", "inference", "GPU", "LLM", or "AI model"
+
+**Do NOT use for:** compute VMs, networking (public IPs, security groups, subnets, VPCs), IAM, storage, load balancers, or non-evroc model providers.
+
+## Prerequisites
+
+Confirm the evroc CLI is installed:
+
+```bash
+evroc version
+```
+
+If the command is not found, the CLI is not installed. Do NOT try to install it
+yourself and do NOT pipe a remote script into a shell. Point the user at the
+official installation instructions at https://docs.evroc.com/ and stop until
+they confirm the CLI is on their PATH.
+
+CLI upgrade confirmation: check for a newer release with
+`evroc upgrade --dry-run`, which reports what it would do and changes nothing.
+Upgrading replaces the binary mid-session, so it requires explicit user consent.
+
+HALT: If the dry-run (or any command output) reports "UPGRADE AVAILABLE", you MUST:
+
+1. Show the user the dry-run report (current release, newer release, install path)
+2. Ask: "Upgrade the evroc CLI now? Type 'yes' to confirm."
+3. Wait for the user to explicitly type 'yes'
+
+Only then run `evroc upgrade` (it verifies checksums, backs up the previous
+binary, and rolls back automatically if the new binary fails its self-test).
+Do NOT run `evroc upgrade` without explicit confirmation.
+A silence or ambiguous response is NOT confirmation.
+If the user declines, continue with the current CLI version.
+
+Then confirm the session is authenticated and a project is selected:
+
+```bash
+evroc config current-project
+```
+
+If that fails, authenticate:
+
+```bash
+evroc login
+```
+
+If no project is selected, warn the user and continue: Think operations
+auto-create one. An unauthenticated session is fatal, so do not continue until
+`evroc login` succeeds.
+
+## Shared Models
+
+Shared Models are managed by evroc — no deployment needed. All shared models expose
+OpenAI API-compatible endpoints.
+
+### List shared models
+
+```bash
+evroc think sharedmodel list
+```
+
+### Use a shared model
+
+The endpoint is OpenAI API-compatible, so any OpenAI client works against
+`https://models.think.evroc.com/v1` with a Think API key as the bearer token.
+
+To wire up a client, create a durable, descriptively named API key once and have
+the **user** put it in their own environment:
+
+```bash
+evroc think apikey create <purpose>-key
+```
+
+The key is shown only at creation. Do NOT capture it into a shell variable,
+echo it, or embed it in a command you run — hand it to the user and let them
+export it. Do not create throwaway keys per request: each `apikey create` leaves
+a key on the account that someone has to clean up.
+
+For a ready-made integration, prefer `evroc think code init` (see Coding Agent
+Integration below), which configures the client without the key passing through
+the conversation.
+
+## Dedicated Model Instances
+
+For more details, read: [`references/dedicated-instances.md`](references/dedicated-instances.md)
+
+### List available models
+
+```bash
+evroc think model list
+```
+
+### Get model details
+
+```bash
+evroc think model get <model-id> -o yaml
+```
+
+### List instance sizes
+
+```bash
+evroc think size list
+```
+
+Sizes encode GPU type + resources, e.g. `1-b200-27c-240g` (1× B200, 27 vCPUs, 240GB RAM).
+
+### Create a dedicated instance
+
+```bash
+evroc think instance create my-instance \
+  --model openai-gpt-oss-120b \
+  --size 1-b200-27c-240g
+```
+
+- `--model` — Required. Model ID from `evroc think model list` (dashed format).
+- `--size` — Required. Instance size ID from `evroc think size list`.
+- `--stopped` — Create in stopped state (default: running).
+
+**Completion criterion:** `evroc think instance get my-instance -o yaml | grep -E '^\s+status:'` shows `Running`.
+
+### List instances
+
+```bash
+evroc think instance list
+```
+
+### Get instance details
+
+```bash
+evroc think instance get my-instance -o yaml
+```
+
+### Start / stop
+
+```bash
+evroc think instance start my-instance
+evroc think instance stop my-instance
+```
+
+### Update a model
+
+```bash
+evroc think instance update my-instance --model <new-model-id>
+```
+
+### Delete an instance
+
+HALT: Before running ANY `evroc think instance delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
+
+"This will permanently delete the Model Instance '<instance-name>' and
+cannot be undone."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<instance-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
+A silence or ambiguous response is NOT confirmation.
+
+```bash
+evroc think instance delete my-instance --force
+```
+
+**Completion criterion:** `evroc think instance get my-instance` returns `not found`.
+
+## API Keys
+
+API keys authenticate requests to Think endpoints (both shared and dedicated).
+
+### Create an API key
+
+```bash
+# No expiry
+evroc think apikey create my-key
+
+# With expiry
+evroc think apikey create my-key --expiry-timestamp 2026-12-31T23:59:59Z
+```
+
+### List API keys
+
+```bash
+evroc think apikey list
+```
+
+### Delete an API key
+
+HALT: Before running ANY `evroc think apikey delete` command, you MUST output
+this message to the user VERBATIM before doing anything else:
+
+"This will permanently delete your API Key '<key-name>' and cannot be
+undone. Any services using this key will immediately lose access."
+
+Then:
+1. List the specific resource(s) that will be deleted (name, type, project)
+2. Ask the user to confirm: "Type 'yes' to confirm deletion of '<key-name>'."
+3. Wait for the user to explicitly type 'yes'
+
+Do NOT run the delete command until the user explicitly confirms.
+A silence or ambiguous response is NOT confirmation.
+
+```bash
+evroc think apikey delete my-key --force
+```
+
+## Coding Agent Integration
+
+Think can serve as the model backend for coding agents.
+
+### One-off session (no config files written)
+
+```bash
+# Claude Code
+evroc think code claude
+
+# Codex
+evroc think code codex
+
+# Hermes Agent
+evroc think code hermes
+
+# OpenCode
+evroc think code opencode
+
+# Aider
+evroc think code aider
+```
+
+This sets `OPENAI_API_KEY` and `OPENAI_BASE_URL` for the session and spawns the agent.
+An API key is created automatically if you're logged in. A project is created
+automatically if you don't have one.
+
+### Permanent project config (committable)
+
+Write agent-specific config files into your project directory:
+
+```bash
+# Claude Code → CLAUDE.md + .claude/settings.local.json
+evroc think code init claude
+
+# Codex → ~/.codex/config.toml
+evroc think code init codex
+
+# Hermes Agent → ~/.hermes/config.yaml
+evroc think code init hermes
+
+# OpenCode → opencode.jsonc
+evroc think code init opencode
+```
+
+## Inference API
+
+Think exposes `https://models.think.evroc.com/v1` with OpenAI-compatible endpoints.
+
+### List models
+
+Use the CLI rather than an authenticated API call — it needs no key handling:
+
+```bash
+evroc think sharedmodel list
+evroc think instance list
+```
+
+The `/v1/models` endpoint returns the same catalog for clients already holding a
+key, but there is no reason to mint one just to list models.
+
+## Quota errors (InsufficientQuota)
+
+Dedicated instance creation fails with HTTP 503 (or 403) when the organization's GPU quota is exhausted. The evroc-think service returns `status: 503, reason: InsufficientQuota` — note the status code differs from compute/networking (403), but the `reason` field is the same. Match on `reason: InsufficientQuota`, not the status code.
+
+Committed quotas are org-wide: current usage in ANY project of the organization counts against the same GPU limit. A 403/503 on an empty project usually means another project (or a GPU VM) consumed the GPU quota.
+
+Stopped instances may not consume quota immediately: a `--stopped` instance create can succeed even when the checker reports 0 GPUs available — quota is accounted when the instance starts. Do not tell the user they are blocked without trying (or asking whether to try) a `--stopped` create if a stopped instance is acceptable.
+
+HALT: When an `instance create` command fails with `reason: InsufficientQuota`
+(any HTTP status — 503 or 403), you MUST:
+
+1. Run `evroc quotas orgquotas get` for the human-readable table, or read the
+   per-model GPU numbers with:
+
+   ```bash
+   evroc quotas orgquotas get -o json | jq -r '
+     ((.spec.quotas.compute.gpus // {}) + (.status.quotaUsage.compute.gpus // {})) as $models
+     | . as $root
+     | $models | keys[] as $m
+     | [$m,
+        ($root.status.quotaUsage.compute.gpus[$m] // 0),
+        ($root.spec.quotas.compute.gpus[$m] // 0)]
+     | @tsv'
+   ```
+
+   GPU quota is keyed by model name, and a model can appear under the limit but
+   not under usage (or the reverse), so take the union of both key sets rather
+   than iterating over one.
+2. Report to the user VERBATIM: for each GPU model, current usage and limit — e.g.
+   "GPUs B200: 2/2 used — at limit"
+3. State: "To request a quota increase, contact support@evroc.com"
+4. Do NOT retry the command until the user decides (stop/delete unused dedicated
+   instances via evroc-compute, reduce the instance size, create with `--stopped`
+   if a stopped instance is acceptable, or contact support).
+   A silence or ambiguous response is NOT confirmation to retry.
+
+## Pitfalls
+
+- **CLI upgrade, never silent**: `evroc upgrade` replaces the CLI binary.
+  `evroc upgrade --dry-run` reports "UPGRADE AVAILABLE" — the agent must ask the user and receive an
+  explicit 'yes' before running `evroc upgrade` (see Prerequisites HALT). Version flag trap:
+  the CLI reports its version with the `evroc version` subcommand (this always exists);
+  `evroc --version` and `evroc -v` do NOT exist on the CLI root. The only valid `--version` flag is
+  on the upgrade subcommand — `evroc upgrade --version <release-name>` installs exactly that named
+  published release (e.g. `--version 20261019-1792428909-root-3d363240`).
+- **Dedicated vs shared**: Shared models are zero-deployment. Dedicated instances
+  require choosing a model and size, then waiting for deployment.
+- **Model IDs use dashed format** matching `evroc think model list` output: e.g. `openai-gpt-oss-120b`,
+  not HuggingFace slash format.
+- **Size format**: Encodes GPU + resources, e.g. `1-b200-27c-240g`. Run
+  `evroc think size list` for the authoritative list.
+- **API key expiry**: Keys created without `--expiry-timestamp` have no expiry.
+  Set an expiry for short-lived access.
+- **Code integration auto-creates resources**: `evroc think code` and
+  `evroc think code init` auto-create an API key and project if missing. Check
+  `evroc think apikey list` after to see what was created.
+- **OpenAI API compatibility**: Endpoints follow OpenAI format.
+  Any OpenAI-compatible client works.
+- **Dedicated instances consume org GPU quota**: GPU-backed dedicated instances count against
+  `compute.gpus.<model>` in the org quota, shared with GPU VM flavors. Check real availability with
+  `evroc quotas orgquotas get` before creating.
+  Quota errors from the think service come back as HTTP 503 `InsufficientQuota` (not 403 like
+  compute/networking) — match on the `reason` field, not the status code.
+  A `--stopped` instance create can succeed even when quota shows 0 available;
+  quota is accounted when the instance starts.
+- **CLI aliases**: `mi` for `modelinstance`/`instance`, `ls` for `list`,
+  `rm`/`del` for `delete`, `new` for `create`.

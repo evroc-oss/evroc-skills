@@ -16,6 +16,7 @@ This repository is packaged as a portable [Agent Plugin](https://agent-plugins.o
 ## Table of Contents
 - [Skills Overview](#skills)
 - [Repository Structure](#repository-structure)
+- [Claude plugin directory build](#claude-plugin-directory-build)
 - [Installation](#installation)
 - [Usage](#usage)
 - [License](#license)
@@ -51,6 +52,7 @@ evroc-skills/
 ├── .claude-plugin/plugin.json     # Claude Plugin manifest
 ├── .cursor-plugin/plugin.json     # Cursor Plugin manifest
 ├── README.md
+├── claude-plugin/                 # Markdown-only build for Anthropic's plugin directory
 └── skills/
     ├── evroc-compute/
     │   ├── SKILL.md
@@ -114,6 +116,19 @@ evroc-skills/
             └── cli-reference.md
 ```
 
+
+## Claude plugin directory build
+
+`claude-plugin/` is a Markdown-only copy of these skills, packaged for
+submission to Anthropic's Claude plugin directory. The directory accepts only
+Markdown, text, JSON, YAML, and images from unverified organizations, so that
+copy carries no `scripts/` or `assets/` — the preflight checks and quota lookups
+are written out as CLI commands in the skill instructions instead — and it omits
+`evroc-rancher`, whose Terraform module cannot ship under those rules.
+
+`skills/` remains the source of truth and is what `npx skills add`, Cursor, and
+a direct git install of this repository use. Changes belong there first; port
+them into `claude-plugin/` when they affect the six skills it ships.
 
 ## Installation
 
