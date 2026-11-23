@@ -8,7 +8,7 @@
 
 Agent skills for working with evroc cloud infrastructure. Each skill follows the [Agent Skills specification](https://agentskills.io/specification). These skills enable developers to create, modify, and delete resources and services on the [evroc](https://docs.evroc.com/).
 
-This repository is packaged as a portable [Agent Plugin](https://agent-plugins.org/) (spec v1.0.0). The root `plugin.json` manifest declares the plugin identity; the `skills/` directory contains the skill components discovered by any Agent Plugins-compatible client. It also includes a [Claude Plugin](https://claude.com/docs/plugins/build) manifest (`.claude-plugin/plugin.json`) and a [Cursor Plugin](https://cursor.com/docs/plugins) manifest (`.cursor-plugin/plugin.json`) for those clients.
+This repository is packaged as a portable [Agent Plugin](https://agent-plugins.org/) (spec v1.0.0). The root `plugin.json` manifest declares the plugin identity; the `skills/` directory contains the skill components discovered by any Agent Plugins-compatible client. It also includes a [Cursor Plugin](https://cursor.com/docs/plugins) manifest (`.cursor-plugin/plugin.json`). The [Claude Plugin](https://claude.com/docs/plugins/build) lives in its own subfolder, [`claude-plugin/`](claude-plugin/) — see [Claude plugin](#claude-plugin) below.
 
 > [!IMPORTANT]
 > Large Language Models (LLMs) are probabilistic and may produce inaccurate, inappropriate, or unintended actions. Use caution when using these tools to create and delete resources. 
@@ -16,7 +16,7 @@ This repository is packaged as a portable [Agent Plugin](https://agent-plugins.o
 ## Table of Contents
 - [Skills Overview](#skills)
 - [Repository Structure](#repository-structure)
-- [Claude plugin directory build](#claude-plugin-directory-build)
+- [Claude plugin](#claude-plugin)
 - [Installation](#installation)
 - [Usage](#usage)
 - [License](#license)
@@ -49,10 +49,10 @@ Each skill includes:
 ```
 evroc-skills/
 ├── plugin.json                    # Agent Plugin manifest (agent-plugins.org)
-├── .claude-plugin/plugin.json     # Claude Plugin manifest
 ├── .cursor-plugin/plugin.json     # Cursor Plugin manifest
 ├── README.md
-├── claude-plugin/                 # Markdown-only build for Anthropic's plugin directory
+├── claude-plugin/                 # Claude Plugin (Markdown-only, submitted to the directory)
+│   └── .claude-plugin/plugin.json
 └── skills/
     ├── evroc-compute/
     │   ├── SKILL.md
@@ -117,18 +117,28 @@ evroc-skills/
 ```
 
 
-## Claude plugin directory build
+## Claude plugin
 
-`claude-plugin/` is a Markdown-only copy of these skills, packaged for
-submission to Anthropic's Claude plugin directory. The directory accepts only
-Markdown, text, JSON, YAML, and images from unverified organizations, so that
-copy carries no `scripts/` or `assets/` — the preflight checks and quota lookups
-are written out as CLI commands in the skill instructions instead — and it omits
+[`claude-plugin/`](claude-plugin/) is the repository's **only** Claude plugin —
+its manifest is `claude-plugin/.claude-plugin/plugin.json`. It holds a
+Markdown-only copy of six skills, packaged for Anthropic's plugin directory.
+
+The directory accepts only Markdown, text, JSON, YAML, and images from
+unverified organizations and scans every file under the plugin root, so the
+plugin lives in a subfolder rather than at the repository root: it carries no
+`scripts/` or `assets/` — the preflight checks and quota lookups are written out
+as CLI commands in the skill instructions instead — and it omits
 `evroc-rancher`, whose Terraform module cannot ship under those rules.
 
-`skills/` remains the source of truth and is what `npx skills add`, Cursor, and
-a direct git install of this repository use. Changes belong there first; port
-them into `claude-plugin/` when they affect the six skills it ships.
+To submit or validate it, give `claude-plugin` as the plugin path:
+
+```
+claude plugin validate ./claude-plugin
+```
+
+`skills/` remains the source of truth and is what `npx skills add` and Cursor
+use. Changes belong there first; port them into `claude-plugin/` when they
+affect the six skills it ships.
 
 ## Installation
 
