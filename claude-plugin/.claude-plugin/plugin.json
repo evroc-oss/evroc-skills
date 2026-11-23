@@ -1,6 +1,6 @@
 {
-  "name": "evroc-skills",
-  "displayName": "evroc Skills",
+  "name": "evroc",
+  "displayName": "evroc",
   "version": "1.3.0",
   "description": "Agent skills for managing evroc European sovereign cloud infrastructure: compute, networking, storage and KMS, IAM, load balancers, and Think Models.",
   "author": {
@@ -22,6 +22,9 @@
     "kms",
     "iam",
     "load-balancer",
-    "think-models"
+    "think-models",
+    "european sovereign",
+    "european cloud",
+    "Sovereign"
   ]
 }
